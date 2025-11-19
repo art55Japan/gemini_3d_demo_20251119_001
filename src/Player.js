@@ -84,13 +84,45 @@ export class Player {
         // --- Body ---
         const bodyGeo = new THREE.SphereGeometry(0.4, 32, 32);
         const body = new THREE.Mesh(bodyGeo, whiteFelt);
-        body.position.y = 0.4;
+        body.position.y = 0.5; // Lifted 0.1
         body.castShadow = true;
         group.add(body);
 
+        // Legs
+        const legGeo = new THREE.CapsuleGeometry(0.1, 0.5, 4, 8); // Longer (0.4 -> 0.5)
+        const legL = new THREE.Mesh(legGeo, whiteFelt);
+        legL.position.set(-0.15, 0.25, 0); // Lifted center to match length
+        group.add(legL);
+
+        const legR = new THREE.Mesh(legGeo, whiteFelt);
+        legR.position.set(0.15, 0.25, 0); // Lifted center
+        group.add(legR);
+
+        // Boots
+        const bootGeo = new THREE.CapsuleGeometry(0.12, 0.15, 4, 8);
+        const bootL = new THREE.Mesh(bootGeo, metal); // Changed to metal
+        bootL.position.set(-0.15, 0.1, 0); // Kept at bottom
+        group.add(bootL);
+
+        const bootR = new THREE.Mesh(bootGeo, metal); // Changed to metal
+        bootR.position.set(0.15, 0.1, 0);
+        group.add(bootR);
+
+        // Feet
+        const footGeo = new THREE.SphereGeometry(0.12, 16, 16); // Rounder and bigger
+        const footL = new THREE.Mesh(footGeo, metal); // Changed to metal
+        footL.scale.set(1, 0.6, 1.5); // Flattened and elongated
+        footL.position.set(-0.15, 0.05, 0.1); // Adjusted position
+        group.add(footL);
+
+        const footR = new THREE.Mesh(footGeo, metal); // Changed to metal
+        footR.scale.set(1, 0.6, 1.5);
+        footR.position.set(0.15, 0.05, 0.1);
+        group.add(footR);
+
         // --- Head Group ---
         const headGroup = new THREE.Group();
-        headGroup.position.y = 0.85;
+        headGroup.position.y = 0.95; // Lifted 0.1
         group.add(headGroup);
 
         // Head Base
@@ -201,32 +233,63 @@ export class Player {
         // Chest Armor
         const armorGeo = new THREE.CylinderGeometry(0.41, 0.41, 0.3, 32);
         const armor = new THREE.Mesh(armorGeo, metal);
-        armor.position.y = 0.55;
+        armor.position.y = 0.65; // Lifted 0.1
         armor.castShadow = true;
         group.add(armor);
 
+        // Armor Collar (Rounded top)
+        const collarGeo = new THREE.TorusGeometry(0.41, 0.03, 8, 32);
+        const collar = new THREE.Mesh(collarGeo, metal);
+        collar.position.y = 0.8; // Top of armor (0.65 + 0.15)
+        collar.rotation.x = Math.PI / 2;
+        group.add(collar);
+
+        // Chest Rivets (Royal Crest Pattern)
+        const chestBoltGeo = new THREE.SphereGeometry(0.012); // Even smaller for fine detail
+        const positions = [
+            // Center
+            { x: 0, y: 0.65 },
+            // Inner Diamond
+            { x: 0, y: 0.68 }, { x: 0, y: 0.62 },
+            { x: -0.04, y: 0.65 }, { x: 0.04, y: 0.65 },
+            // Outer Cross Tips
+            { x: 0, y: 0.73 }, { x: 0, y: 0.57 },
+            { x: -0.09, y: 0.65 }, { x: 0.09, y: 0.65 },
+            // Corner Accents
+            { x: -0.06, y: 0.69 }, { x: 0.06, y: 0.69 },
+            { x: -0.06, y: 0.61 }, { x: 0.06, y: 0.61 }
+        ];
+
+        positions.forEach(pos => {
+            const bolt = new THREE.Mesh(chestBoltGeo, darkMetal);
+            const z = Math.sqrt(0.41 * 0.41 - pos.x * pos.x);
+            bolt.position.set(pos.x, pos.y, z);
+            group.add(bolt);
+        });
+
         // Shoulder Pads
-        const shoulderGeo = new THREE.SphereGeometry(0.15, 16, 16, 0, Math.PI * 2, 0, Math.PI * 0.5);
+        // More rounded: larger radius, fuller sphere section (0.5 PI -> 0.75 PI)
+        const shoulderGeo = new THREE.SphereGeometry(0.16, 16, 16, 0, Math.PI * 2, 0, Math.PI * 0.75);
 
         const shoulderL = new THREE.Mesh(shoulderGeo, metal);
-        shoulderL.position.set(-0.35, 0.6, 0);
+        shoulderL.position.set(-0.35, 0.65, 0); // Adjusted Y slightly
         shoulderL.rotation.z = 0.5;
         group.add(shoulderL);
 
         const shoulderR = new THREE.Mesh(shoulderGeo, metal);
-        shoulderR.position.set(0.35, 0.6, 0);
+        shoulderR.position.set(0.35, 0.65, 0); // Adjusted Y slightly
         shoulderR.rotation.z = -0.5;
         group.add(shoulderR);
 
         // Belt
         const beltGeo = new THREE.CylinderGeometry(0.42, 0.42, 0.08, 32);
         const belt = new THREE.Mesh(beltGeo, leather);
-        belt.position.y = 0.35;
+        belt.position.y = 0.45; // Lifted 0.1
         group.add(belt);
 
         const buckleGeo = new THREE.BoxGeometry(0.1, 0.1, 0.05);
         const buckle = new THREE.Mesh(buckleGeo, metal);
-        buckle.position.set(0, 0.35, 0.4);
+        buckle.position.set(0, 0.45, 0.4); // Lifted 0.1
         group.add(buckle);
 
         // --- Accessories ---
@@ -234,14 +297,14 @@ export class Player {
         // Cape
         const capeGeo = new THREE.PlaneGeometry(0.6, 0.8);
         const cape = new THREE.Mesh(capeGeo, blueCloth);
-        cape.position.set(0, 0.7, -0.35);
+        cape.position.set(0, 0.8, -0.35); // Lifted 0.1
         cape.rotation.x = THREE.MathUtils.degToRad(10);
         cape.rotation.y = THREE.MathUtils.degToRad(180);
         group.add(cape);
 
         // Sword (Right Hand)
         const swordGroup = new THREE.Group();
-        swordGroup.position.set(0.5, 0.5, 0.3);
+        swordGroup.position.set(0.5, 0.6, 0.3); // Lifted 0.1
 
         const handleGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.2);
         const handle = new THREE.Mesh(handleGeo, leather);
@@ -263,7 +326,7 @@ export class Player {
         // Shield (Left Hand)
         const shieldGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.05, 32);
         const shield = new THREE.Mesh(shieldGeo, metal);
-        shield.position.set(-0.4, 0.5, 0.3);
+        shield.position.set(-0.4, 0.6, 0.3); // Lifted 0.1
         shield.rotation.x = Math.PI / 2;
         shield.rotation.y = -Math.PI / 4;
         group.add(shield);

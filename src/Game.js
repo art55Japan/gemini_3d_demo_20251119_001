@@ -2,40 +2,51 @@ import * as THREE from 'three';
 import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
 import { Player } from './Player.js';
 import { Input } from './Input.js';
+import { EntityManager } from './EntityManager.js';
 
 export class Game {
     constructor() {
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0x87CEEB); // Sky blue
 
-        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
+        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         this.camera.position.set(0, 1.6, 3); // Standard VR height
 
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.xr.enabled = true;
+        this.renderer.shadowMap.enabled = true;
         document.body.appendChild(this.renderer.domElement);
         document.body.appendChild(VRButton.createButton(this.renderer));
 
         // Lighting
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        const ambientLight = new THREE.AmbientLight(0x404040, 2); // Soft white light
         this.scene.add(ambientLight);
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
         directionalLight.position.set(5, 10, 7.5);
+        directionalLight.castShadow = true;
         this.scene.add(directionalLight);
 
         // Ground
-        const groundGeometry = new THREE.PlaneGeometry(20, 20);
-        const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x999999 });
-        const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+        const groundGeo = new THREE.PlaneGeometry(100, 100);
+        const groundMat = new THREE.MeshStandardMaterial({ color: 0x999999 });
+        const ground = new THREE.Mesh(groundGeo, groundMat);
         ground.rotation.x = -Math.PI / 2;
+        ground.receiveShadow = true;
         this.scene.add(ground);
 
         // Input
         this.input = new Input(this.renderer);
 
+        // Entity Manager
+        this.entityManager = new EntityManager(this.scene);
+
         // Player
         this.player = new Player(this.scene);
+        this.entityManager.add(this.player);
+
+        this.clock = new THREE.Clock();
 
         window.addEventListener('resize', this.onWindowResize.bind(this));
     }
@@ -51,10 +62,11 @@ export class Game {
     }
 
     render() {
-        const delta = 0.016; // Fixed time step for now
+        const delta = this.clock.getDelta();
+        const time = this.clock.getElapsedTime();
         const inputState = this.input.getState();
 
-        this.player.update(delta, inputState);
+        this.entityManager.update(delta, inputState, time);
 
         // Simple camera follow for desktop
         // In VR, the camera is controlled by the headset
