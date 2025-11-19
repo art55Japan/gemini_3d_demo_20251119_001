@@ -4,7 +4,7 @@ export class Player {
     constructor(scene) {
         this.scene = scene;
         this.position = new THREE.Vector3(0, 0, 0);
-        this.speed = 2.0;
+        this.speed = 10.0; // Doubled from 5.0
         this.rotationSpeed = 10.0;
 
         this.mesh = this.buildCharacter();
