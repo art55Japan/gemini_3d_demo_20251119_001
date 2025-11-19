@@ -10,6 +10,12 @@ export class Player {
         this.mesh = this.buildCharacter();
         this.mesh.position.copy(this.position);
         this.scene.add(this.mesh);
+
+        // Physics
+        this.velocity = new THREE.Vector3(0, 0, 0);
+        this.onGround = true;
+        this.gravity = -20.0;
+        this.jumpStrength = 8.0;
     }
 
     createFeltTexture(colorHex) {
@@ -335,16 +341,46 @@ export class Player {
     }
 
     update(delta, input) {
-        if (input.x !== 0 || input.z !== 0) {
-            // Movement
-            const move = new THREE.Vector3(input.x, 0, input.z).normalize().multiplyScalar(this.speed * delta);
-            this.position.add(move);
-            this.mesh.position.copy(this.position);
+        // Movement
+        const moveX = input.x;
+        const moveZ = input.z;
 
-            // Rotation (Face movement direction)
-            const targetRotation = Math.atan2(move.x, move.z);
-            // Smooth rotation could be added here, for now snap or simple lerp
-            this.mesh.rotation.y = targetRotation;
+        if (moveX !== 0 || moveZ !== 0) {
+            const moveVector = new THREE.Vector3(moveX, 0, moveZ).normalize();
+
+            // Move relative to camera/world (simplified for now)
+            this.position.x += moveVector.x * this.speed * delta;
+            this.position.z += moveVector.z * this.speed * delta;
+
+            // Rotate character to face movement direction
+            const angle = Math.atan2(moveVector.x, moveVector.z);
+            const targetRotation = angle;
+
+            // Smooth rotation
+            let diff = targetRotation - this.mesh.rotation.y;
+            while (diff > Math.PI) diff -= Math.PI * 2;
+            while (diff < -Math.PI) diff += Math.PI * 2;
+
+            this.mesh.rotation.y += diff * this.rotationSpeed * delta;
         }
+
+        // Jump & Gravity
+        if (this.onGround && input.jump) {
+            this.velocity.y = this.jumpStrength;
+            this.onGround = false;
+        }
+
+        // Apply Gravity
+        this.velocity.y += this.gravity * delta;
+        this.position.y += this.velocity.y * delta;
+
+        // Ground Collision
+        if (this.position.y <= 0) {
+            this.position.y = 0;
+            this.velocity.y = 0;
+            this.onGround = true;
+        }
+
+        this.mesh.position.copy(this.position);
     }
 }
