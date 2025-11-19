@@ -23,10 +23,10 @@ export class EntityManager {
         }
     }
 
-    update(delta, input, time) {
+    update(delta, input, time, collidables) {
         for (const entity of this.entities) {
             if (entity.update) {
-                entity.update(delta, input, time);
+                entity.update(delta, input, time, collidables);
             }
         }
     }

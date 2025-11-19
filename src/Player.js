@@ -16,6 +16,10 @@ export class Player {
         this.onGround = true;
         this.gravity = -20.0;
         this.jumpStrength = 8.0;
+
+        // Collision
+        this.raycaster = new THREE.Raycaster();
+        this.downVector = new THREE.Vector3(0, -1, 0);
     }
 
     createFeltTexture(colorHex) {
@@ -333,14 +337,12 @@ export class Player {
         const shieldGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.05, 32);
         const shield = new THREE.Mesh(shieldGeo, metal);
         shield.position.set(-0.4, 0.6, 0.3); // Lifted 0.1
-        shield.rotation.x = Math.PI / 2;
-        shield.rotation.y = -Math.PI / 4;
-        group.add(shield);
-
         return group;
     }
 
-    update(delta, input) {
+
+
+    update(delta, input, time, collidables) {
         // Movement
         const moveX = input.x;
         const moveZ = input.z;
@@ -364,6 +366,28 @@ export class Player {
             this.mesh.rotation.y += diff * this.rotationSpeed * delta;
         }
 
+        // Raycast for Ground/Platform Detection
+        let groundHeight = 0;
+        if (collidables && collidables.length > 0) {
+            // Cast ray from slightly above player position downwards
+            const rayOrigin = this.position.clone();
+            rayOrigin.y += 1.0; // Start ray 1 unit above
+
+            this.raycaster.set(rayOrigin, this.downVector);
+
+            const intersects = this.raycaster.intersectObjects(collidables, true); // Recursive check
+
+            if (intersects.length > 0) {
+                // Find the highest intersection that is below the player's feet (plus some tolerance)
+                // intersects are sorted by distance.
+                // We want the first hit that is reasonable.
+                const hit = intersects[0];
+                // If the hit point is close to our current Y (or below us), treat it as ground
+                // hit.point.y is the world height of the collision
+                groundHeight = hit.point.y;
+            }
+        }
+
         // Jump & Gravity
         if (this.onGround && input.jump) {
             this.velocity.y = this.jumpStrength;
@@ -374,11 +398,18 @@ export class Player {
         this.velocity.y += this.gravity * delta;
         this.position.y += this.velocity.y * delta;
 
-        // Ground Collision
-        if (this.position.y <= 0) {
-            this.position.y = 0;
+        // Ground/Platform Collision
+        if (this.position.y <= groundHeight) {
+            this.position.y = groundHeight;
             this.velocity.y = 0;
             this.onGround = true;
+        } else {
+            // If we walked off a platform, we are no longer on ground (unless jumping)
+            // But we need to be careful not to flicker onGround state when just standing
+            // Simple check: if we are significantly above groundHeight and falling, we are in air
+            if (this.position.y > groundHeight + 0.1 && this.velocity.y < 0) {
+                this.onGround = false;
+            }
         }
 
         this.mesh.position.copy(this.position);

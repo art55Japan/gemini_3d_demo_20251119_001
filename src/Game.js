@@ -49,11 +49,14 @@ export class Game {
         this.entityManager.add(this.player);
 
         // Environment
+        this.collidables = []; // Array to store objects the player can stand on
         this.populateWorld();
 
         this.clock = new THREE.Clock();
 
         window.addEventListener('resize', this.onWindowResize.bind(this));
+
+        this.camera.lookAt(this.player.position);
     }
 
     populateWorld() {
@@ -78,6 +81,9 @@ export class Game {
             const scale = 0.5 + Math.random() * 1.0;
             const rock = new Rock(x, z, scale);
             this.entityManager.add(rock);
+
+            // Add rock mesh to collidables
+            this.collidables.push(rock.mesh);
         }
     }
 
@@ -96,7 +102,7 @@ export class Game {
         const time = this.clock.getElapsedTime();
         const inputState = this.input.getState();
 
-        this.entityManager.update(delta, inputState, time);
+        this.entityManager.update(delta, inputState, time, this.collidables);
 
         // Simple camera follow for desktop
         // In VR, the camera is controlled by the headset
