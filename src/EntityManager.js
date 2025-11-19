@@ -26,7 +26,10 @@ export class EntityManager {
     update(delta, input, time, collidables) {
         for (const entity of this.entities) {
             if (entity.update) {
-                entity.update(delta, input, time, collidables);
+                entity.update(delta, input, time, collidables, this.entities);
+            }
+            if (entity.shouldRemove) {
+                this.remove(entity);
             }
         }
     }

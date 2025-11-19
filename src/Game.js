@@ -5,6 +5,8 @@ import { Input } from './Input.js';
 import { EntityManager } from './EntityManager.js';
 import { Tree } from './Tree.js';
 import { Rock } from './Rock.js';
+import { Slime } from './Slime.js';
+import { AudioManager } from './AudioManager.js';
 
 export class Game {
     constructor() {
@@ -20,6 +22,18 @@ export class Game {
         this.renderer.shadowMap.enabled = true;
         document.body.appendChild(this.renderer.domElement);
         document.body.appendChild(VRButton.createButton(this.renderer));
+
+        // Audio
+        this.audioManager = new AudioManager();
+        // Start BGM on first interaction
+        window.addEventListener('click', () => {
+            this.audioManager.startBGM();
+            this.audioManager.resumeContext();
+        }, { once: true });
+        window.addEventListener('keydown', () => {
+            this.audioManager.startBGM();
+            this.audioManager.resumeContext();
+        }, { once: true });
 
         // Lighting
         const ambientLight = new THREE.AmbientLight(0x404040, 2); // Soft white light
@@ -45,7 +59,7 @@ export class Game {
         this.entityManager = new EntityManager(this.scene);
 
         // Player
-        this.player = new Player(this.scene);
+        this.player = new Player(this.scene, this.audioManager); // Pass audioManager
         this.entityManager.add(this.player);
 
         // Environment
@@ -84,6 +98,17 @@ export class Game {
 
             // Add rock mesh to collidables
             this.collidables.push(rock.mesh);
+        }
+
+        // Slimes
+        for (let i = 0; i < 10; i++) {
+            const x = (Math.random() - 0.5) * 30;
+            const z = (Math.random() - 0.5) * 30;
+            // Avoid immediate start area
+            if (Math.abs(x) < 5 && Math.abs(z) < 5) continue;
+
+            const slime = new Slime(x, z);
+            this.entityManager.add(slime);
         }
     }
 

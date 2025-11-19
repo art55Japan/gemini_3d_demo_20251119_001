@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 
 export class Player {
-    constructor(scene) {
+    constructor(scene, audioManager) {
         this.scene = scene;
+        this.audioManager = audioManager;
         this.position = new THREE.Vector3(0, 0, 0);
         this.speed = 10.0; // Doubled from 5.0
         this.rotationSpeed = 10.0;
@@ -13,6 +14,7 @@ export class Player {
 
         // Physics
         this.velocity = new THREE.Vector3(0, 0, 0);
+        this.knockbackVelocity = new THREE.Vector3(0, 0, 0);
         this.onGround = true;
         this.gravity = -20.0;
         this.jumpStrength = 8.0;
@@ -20,6 +22,13 @@ export class Player {
         // Collision
         this.raycaster = new THREE.Raycaster();
         this.downVector = new THREE.Vector3(0, -1, 0);
+
+        // Combat
+        this.sword = this.mesh.getObjectByName('sword');
+        this.isAttacking = false;
+        this.attackTimer = 0;
+        this.attackDuration = 0.4;
+        this.baseSwordRotation = Math.PI / 4;
     }
 
     createFeltTexture(colorHex) {
@@ -331,6 +340,7 @@ export class Player {
         swordGroup.add(blade);
 
         swordGroup.rotation.x = Math.PI / 4;
+        swordGroup.name = 'sword';
         group.add(swordGroup);
 
         // Shield (Left Hand)
@@ -340,9 +350,7 @@ export class Player {
         return group;
     }
 
-
-
-    update(delta, input, time, collidables) {
+    update(delta, input, time, collidables, entities) {
         // Movement
         const moveX = input.x;
         const moveZ = input.z;
@@ -364,6 +372,16 @@ export class Player {
             while (diff < -Math.PI) diff += Math.PI * 2;
 
             this.mesh.rotation.y += diff * this.rotationSpeed * delta;
+        }
+
+        // Apply Knockback Velocity
+        this.position.x += this.knockbackVelocity.x * delta;
+        this.position.z += this.knockbackVelocity.z * delta;
+
+        // Friction for knockback
+        this.knockbackVelocity.multiplyScalar(0.9);
+        if (this.knockbackVelocity.length() < 0.1) {
+            this.knockbackVelocity.set(0, 0, 0);
         }
 
         // Raycast for Ground/Platform Detection
@@ -392,6 +410,7 @@ export class Player {
         if (this.onGround && input.jump) {
             this.velocity.y = this.jumpStrength;
             this.onGround = false;
+            if (this.audioManager) this.audioManager.playJump();
         }
 
         // Apply Gravity
@@ -413,5 +432,94 @@ export class Player {
         }
 
         this.mesh.position.copy(this.position);
+
+        // Combat Update
+        this.updateAttack(delta, input, entities);
+
+        // Enemy Collision (Knockback)
+        this.checkEnemyCollision(entities);
+    }
+
+    checkEnemyCollision(entities) {
+        if (!entities) return;
+
+        const collisionRange = 0.8; // Body radius + Slime radius
+
+        for (const entity of entities) {
+            if (entity.constructor.name === 'Slime' && !entity.isDead) {
+                const dist = this.position.distanceTo(entity.position);
+                if (dist < collisionRange) {
+                    // Calculate knockback direction (away from slime)
+                    const knockbackDir = this.position.clone().sub(entity.position).normalize();
+
+                    // Apply horizontal knockback
+                    const knockbackStrength = 15.0;
+                    this.knockbackVelocity.x = knockbackDir.x * knockbackStrength;
+                    this.knockbackVelocity.z = knockbackDir.z * knockbackStrength;
+
+                    // Apply vertical knockback (small hop)
+                    this.velocity.y = 5.0;
+                    this.onGround = false;
+
+                    console.log('Player hit by slime! Knockback!');
+                    if (this.audioManager) this.audioManager.playHit();
+                }
+            }
+        }
+    }
+
+    updateAttack(delta, input, entities) {
+        if (input.attack && !this.isAttacking) {
+            this.isAttacking = true;
+            this.attackTimer = 0;
+            if (this.audioManager) this.audioManager.playAttack();
+        }
+
+        if (this.isAttacking) {
+            this.attackTimer += delta;
+
+            // Sword Animation (Swing down and up)
+            // 0 to 0.5: Swing down
+            // 0.5 to 1.0: Swing up
+            const progress = this.attackTimer / this.attackDuration;
+
+            if (progress < 0.5) {
+                // Swing down
+                this.sword.rotation.x = this.baseSwordRotation + (progress * 2) * (Math.PI / 2);
+            } else {
+                // Swing up
+                this.sword.rotation.x = this.baseSwordRotation + (Math.PI / 2) - ((progress - 0.5) * 2) * (Math.PI / 2);
+            }
+
+            // Check Hit (only during the middle of the swing)
+            if (progress > 0.2 && progress < 0.6) {
+                this.checkAttackCollision(entities);
+            }
+
+            if (this.attackTimer >= this.attackDuration) {
+                this.isAttacking = false;
+                this.sword.rotation.x = this.baseSwordRotation;
+            }
+        }
+    }
+
+    checkAttackCollision(entities) {
+        if (!entities) return;
+
+        const attackRange = 2.0;
+        const forward = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), this.mesh.rotation.y);
+        const attackPos = this.position.clone().add(forward.multiplyScalar(1.0)); // Hitbox center in front of player
+
+        for (const entity of entities) {
+            if (entity.constructor.name === 'Slime') {
+                const dist = attackPos.distanceTo(entity.position);
+                if (dist < attackRange) {
+                    if (entity.takeDamage) {
+                        entity.takeDamage();
+                        if (this.audioManager) this.audioManager.playEnemyDeath();
+                    }
+                }
+            }
+        }
     }
 }
