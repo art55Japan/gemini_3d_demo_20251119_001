@@ -2,6 +2,7 @@ import * as THREE from 'three';
 
 export class Rock {
     constructor(x, z, scale = 1) {
+        this.scale = scale;
         this.mesh = new THREE.Group();
         this.mesh.position.set(x, 0, z);
 

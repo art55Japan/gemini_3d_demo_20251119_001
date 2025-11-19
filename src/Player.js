@@ -438,6 +438,53 @@ export class Player {
 
         // Enemy Collision (Knockback)
         this.checkEnemyCollision(entities);
+
+        // Environment Collision (Trees, Rocks)
+        this.checkEnvironmentCollision(entities);
+    }
+
+    checkEnvironmentCollision(entities) {
+        if (!entities) return;
+
+        const playerRadius = 0.4; // Player body radius
+
+        for (const entity of entities) {
+            let obstacleRadius = 0;
+            let obstacleHeight = 0;
+
+            if (entity.constructor.name === 'Tree') {
+                obstacleRadius = 0.3; // Trunk radius + buffer
+                obstacleHeight = 10.0; // Too high to jump over
+            } else if (entity.constructor.name === 'Rock') {
+                const scale = entity.scale || 1.0;
+                obstacleRadius = 0.6 * scale;
+                obstacleHeight = 0.7 * scale; // Allow standing on top
+            } else {
+                continue;
+            }
+
+            // Check Height
+            if (this.position.y > obstacleHeight) continue; // Above the obstacle
+
+            // Check Distance (XZ plane)
+            const dx = this.position.x - entity.mesh.position.x;
+            const dz = this.position.z - entity.mesh.position.z;
+            const distance = Math.sqrt(dx * dx + dz * dz);
+            const minDistance = playerRadius + obstacleRadius;
+
+            if (distance < minDistance) {
+                // Collision detected
+                // Push player out
+                const angle = Math.atan2(dz, dx);
+                const pushX = Math.cos(angle) * minDistance;
+                const pushZ = Math.sin(angle) * minDistance;
+
+                this.position.x = entity.mesh.position.x + pushX;
+                this.position.z = entity.mesh.position.z + pushZ;
+
+                // console.log(`Env Collision with ${entity.constructor.name}: Pushed to ${this.position.x.toFixed(2)}, ${this.position.z.toFixed(2)}`);
+            }
+        }
     }
 
     checkEnemyCollision(entities) {
@@ -461,7 +508,7 @@ export class Player {
                     this.velocity.y = 5.0;
                     this.onGround = false;
 
-                    console.log('Player hit by slime! Knockback!');
+                    // console.log('Player hit by slime! Knockback!');
                     if (this.audioManager) this.audioManager.playHit();
                 }
             }
@@ -523,3 +570,4 @@ export class Player {
         }
     }
 }
+
