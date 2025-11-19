@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Felt Rabbit Paladin WebXR</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app"></div>
+  <div id="error-container"
+    style="position: absolute; top: 0; left: 0; color: red; background: rgba(255, 255, 255, 0.9); z-index: 9999; padding: 10px; white-space: pre-wrap;">
+  </div>
+  <script>
+    window.addEventListener('error', function (event) {
+      document.getElementById('error-container').textContent += 'Error: ' + event.message + '\n' + event.filename + ':' + event.lineno + '\n';
+    });
+    window.addEventListener('unhandledrejection', function (event) {
+      document.getElementById('error-container').textContent += 'Promise Rejection: ' + event.reason + '\n';
+    });
+  </script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+
+</html>
