@@ -23,12 +23,30 @@ export class Input {
         if (this.keys.a || this.keys.ArrowLeft) move.x -= 1;
         if (this.keys.d || this.keys.ArrowRight) move.x += 1;
 
-        // VR Controller (Simplified)
+        // VR Controller
         const session = this.renderer.xr.getSession();
         if (session) {
-            // TODO: Implement VR controller input
-            // This requires accessing input sources from the session or frame
-            // For now, we rely on keyboard for testing
+            for (const source of session.inputSources) {
+                if (source.gamepad) {
+                    // Standard XR Gamepad Mapping
+                    // Axes 2 and 3 are usually the thumbstick (X, Y)
+                    const axes = source.gamepad.axes;
+                    if (axes.length >= 4) {
+                        // Deadzone
+                        const deadzone = 0.1;
+
+                        // X-axis (Left/Right)
+                        if (Math.abs(axes[2]) > deadzone) {
+                            move.x += axes[2];
+                        }
+
+                        // Y-axis (Up/Down) - Inverted in some mappings, but usually Up is -1
+                        if (Math.abs(axes[3]) > deadzone) {
+                            move.z += axes[3];
+                        }
+                    }
+                }
+            }
         }
 
         return move;

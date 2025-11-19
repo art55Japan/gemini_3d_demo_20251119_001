@@ -3,6 +3,8 @@ import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
 import { Player } from './Player.js';
 import { Input } from './Input.js';
 import { EntityManager } from './EntityManager.js';
+import { Tree } from './Tree.js';
+import { Rock } from './Rock.js';
 
 export class Game {
     constructor() {
@@ -46,9 +48,37 @@ export class Game {
         this.player = new Player(this.scene);
         this.entityManager.add(this.player);
 
+        // Environment
+        this.populateWorld();
+
         this.clock = new THREE.Clock();
 
         window.addEventListener('resize', this.onWindowResize.bind(this));
+    }
+
+    populateWorld() {
+        // Trees
+        for (let i = 0; i < 20; i++) {
+            const x = (Math.random() - 0.5) * 40;
+            const z = (Math.random() - 0.5) * 40;
+            // Avoid center area
+            if (Math.abs(x) < 3 && Math.abs(z) < 3) continue;
+
+            const tree = new Tree(x, z);
+            this.entityManager.add(tree);
+        }
+
+        // Rocks
+        for (let i = 0; i < 15; i++) {
+            const x = (Math.random() - 0.5) * 40;
+            const z = (Math.random() - 0.5) * 40;
+            // Avoid center area
+            if (Math.abs(x) < 2 && Math.abs(z) < 2) continue;
+
+            const scale = 0.5 + Math.random() * 1.0;
+            const rock = new Rock(x, z, scale);
+            this.entityManager.add(rock);
+        }
     }
 
     start() {
