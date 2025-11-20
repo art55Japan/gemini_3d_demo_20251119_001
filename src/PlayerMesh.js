@@ -290,7 +290,16 @@ export class PlayerMesh {
         shield.rotation.y = Math.PI / 2;
         group.add(shield);
 
-        return group;
+        // Rotate inner group to face -Z (North)
+        // The model was built facing +Z (South), so we rotate 180 degrees
+        group.rotation.y = Math.PI;
+
+        // Create a root group to return
+        // This allows the Player class to rotate the root without resetting the model's internal correction
+        const rootGroup = new THREE.Group();
+        rootGroup.add(group);
+
+        return rootGroup;
     }
 
     createFeltTexture(colorHex) {

@@ -11,7 +11,7 @@ export class Player {
 
         this.mesh = this.buildCharacter();
         this.mesh.position.copy(this.position);
-        this.mesh.rotation.y = Math.PI; // Face away from camera (North/Negative Z)
+        this.mesh.rotation.y = 0; // Face Forward (-Z) by default
         this.scene.add(this.mesh);
 
         // Physics
@@ -44,7 +44,7 @@ export class Player {
             this.velocity.set(0, 0, 0);
             this.knockbackVelocity.set(0, 0, 0);
             this.onGround = true;
-            this.mesh.rotation.y = Math.PI;
+            this.mesh.rotation.y = 0;
             console.log("Player Reset");
         }
 
@@ -64,14 +64,21 @@ export class Player {
         // Apply Input Movement
         if (moveX !== 0 || moveZ !== 0) {
             // Calculate Movement Vector (Character Relative)
-            const forward = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), this.mesh.rotation.y);
+            // Forward is -Z (0, 0, -1)
+            const forward = new THREE.Vector3(0, 0, -1).applyAxisAngle(new THREE.Vector3(0, 1, 0), this.mesh.rotation.y);
+            // Right is +X (1, 0, 0)
             const right = new THREE.Vector3(1, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), this.mesh.rotation.y);
 
             const moveVector = new THREE.Vector3();
 
-            // Strafing Logic (Corrected)
+            // Strafing Logic (Standardized)
+            // W (moveZ = -1) -> Should move Forward. forward * -(-1) = forward. Correct.
+            // S (moveZ = 1) -> Should move Backward. forward * -(1) = backward. Correct.
             moveVector.addScaledVector(forward, -moveZ);
-            moveVector.addScaledVector(right, -moveX);
+
+            // A (moveX = -1) -> Should move Left. right * (-1) = left. Correct.
+            // D (moveX = 1) -> Should move Right. right * (1) = right. Correct.
+            moveVector.addScaledVector(right, moveX);
 
             if (moveVector.length() > 0) {
                 moveVector.normalize();
@@ -254,7 +261,7 @@ export class Player {
         if (!entities) return;
 
         const attackRange = 2.0;
-        const forward = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), this.mesh.rotation.y);
+        const forward = new THREE.Vector3(0, 0, -1).applyAxisAngle(new THREE.Vector3(0, 1, 0), this.mesh.rotation.y);
         const attackPos = this.position.clone().add(forward.multiplyScalar(1.0)); // Hitbox center in front of player
 
         for (const entity of entities) {

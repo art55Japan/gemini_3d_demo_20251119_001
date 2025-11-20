@@ -13,8 +13,8 @@ export class CameraManager {
         if (!this.renderer.xr.isPresenting) {
             // TPS Camera: Follow player rotation
             // Offset needs to be "behind" the player.
-            // Player faces +Z (at rot 0). So "behind" is -Z.
-            const offset = new THREE.Vector3(0, 2.5, -4); // Up 2.5, Back 4 (Negative Z)
+            // Player faces -Z (Forward). So "behind" is +Z.
+            const offset = new THREE.Vector3(0, 2.5, 4); // Up 2.5, Back 4 (Positive Z)
 
             // Ensure player mesh exists before accessing rotation
             if (this.player.mesh) {
