@@ -459,14 +459,15 @@ export class Player {
                 const scale = entity.scale || 1.0;
                 obstacleRadius = 0.6 * scale;
                 obstacleHeight = 0.7 * scale; // Allow standing on top
+            } else if (entity.constructor.name === 'Block') {
+                obstacleRadius = 0.5; // 1x1 cube, radius 0.5
+                obstacleHeight = 0.9; // Allow standing on top
             } else {
                 continue;
             }
 
             // Check Height
             if (this.position.y > obstacleHeight) continue; // Above the obstacle
-
-            // Check Distance (XZ plane)
             const dx = this.position.x - entity.mesh.position.x;
             const dz = this.position.z - entity.mesh.position.z;
             const distance = Math.sqrt(dx * dx + dz * dz);

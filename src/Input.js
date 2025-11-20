@@ -4,7 +4,7 @@ export class Input {
         this.keys = {
             w: false, a: false, s: false, d: false,
             arrowup: false, arrowleft: false, arrowdown: false, arrowright: false,
-            ' ': false, f: false
+            ' ': false, f: false, b: false
         };
 
         this.mouseDown = false;
@@ -18,16 +18,33 @@ export class Input {
             if (this.keys.hasOwnProperty(key)) this.keys[key] = false;
         });
 
-        window.addEventListener('mousedown', () => {
-            this.mouseDown = true;
-        });
         window.addEventListener('mouseup', () => {
             this.mouseDown = false;
+        });
+
+        this.rightMouseDown = false;
+        window.addEventListener('contextmenu', (e) => {
+            e.preventDefault(); // Prevent context menu
+            // We handle right click state in mousedown/up but contextmenu event is good to block
+        });
+        window.addEventListener('mousedown', (e) => {
+            if (e.button === 0) this.mouseDown = true;
+            if (e.button === 2) this.rightMouseDown = true;
+        });
+        window.addEventListener('mouseup', (e) => {
+            if (e.button === 0) this.mouseDown = false;
+            if (e.button === 2) this.rightMouseDown = false;
+        });
+
+        this.mouse = { x: 0, y: 0 };
+        window.addEventListener('mousemove', (e) => {
+            this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            this.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
         });
     }
 
     getState() {
-        const move = { x: 0, z: 0, jump: false, attack: false };
+        const move = { x: 0, z: 0, jump: false, attack: false, mouse: { ...this.mouse } };
 
         // Keyboard
         if (this.keys.w || this.keys.arrowup) move.z -= 1;
@@ -86,6 +103,13 @@ export class Input {
                 }
             }
         }
+
+        // Build Mode Inputs
+        if (this.keys.b) {
+            move.toggleBuildMode = true;
+        }
+        if (this.mouseDown) move.placeBlock = true; // Left click
+        if (this.rightMouseDown) move.removeBlock = true; // Right click
 
         return move;
     }
