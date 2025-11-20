@@ -10,6 +10,7 @@ export class Player {
 
         this.mesh = this.buildCharacter();
         this.mesh.position.copy(this.position);
+        this.mesh.rotation.y = Math.PI; // Face away from camera (North/Negative Z)
         this.scene.add(this.mesh);
 
         // Physics
@@ -346,35 +347,58 @@ export class Player {
         // Shield (Left Hand)
         const shieldGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.05, 32);
         const shield = new THREE.Mesh(shieldGeo, metal);
-        shield.position.set(-0.4, 0.6, 0.3); // Lifted 0.1
+        shield.position.set(-0.4, 0.6, 0.3);
+        shield.rotation.z = Math.PI / 2;
+        shield.rotation.y = Math.PI / 2;
+        group.add(shield);
+
         return group;
     }
 
     update(delta, input, time, collidables, entities) {
-        // Movement
-        const moveX = input.x;
-        const moveZ = input.z;
-
-        if (moveX !== 0 || moveZ !== 0) {
-            const moveVector = new THREE.Vector3(moveX, 0, moveZ).normalize();
-
-            // Move relative to camera/world (simplified for now)
-            this.position.x += moveVector.x * this.speed * delta;
-            this.position.z += moveVector.z * this.speed * delta;
-
-            // Rotate character to face movement direction
-            const angle = Math.atan2(moveVector.x, moveVector.z);
-            const targetRotation = angle;
-
-            // Smooth rotation
-            let diff = targetRotation - this.mesh.rotation.y;
-            while (diff > Math.PI) diff -= Math.PI * 2;
-            while (diff < -Math.PI) diff += Math.PI * 2;
-
-            this.mesh.rotation.y += diff * this.rotationSpeed * delta;
+        // Emergency Reset
+        if (input.reset) {
+            this.position.set(0, 0.5, 0);
+            this.velocity.set(0, 0, 0);
+            this.knockbackVelocity.set(0, 0, 0);
+            this.onGround = true;
+            this.mesh.rotation.y = Math.PI;
+            console.log("Player Reset");
         }
 
-        // Apply Knockback Velocity
+        // Rotation (Manual)
+        const rotationSpeed = 3.0; // Adjust speed as needed
+        if (input.rotateLeft) {
+            this.mesh.rotation.y += rotationSpeed * delta;
+        }
+        if (input.rotateRight) {
+            this.mesh.rotation.y -= rotationSpeed * delta;
+        }
+
+        // Movement (Character Relative)
+        const moveX = input.x; // Strafe (A/D)
+        const moveZ = input.z; // Forward/Back (W/S)
+
+        // Apply Input Movement
+        if (moveX !== 0 || moveZ !== 0) {
+            // Calculate Movement Vector (Character Relative)
+            const forward = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), this.mesh.rotation.y);
+            const right = new THREE.Vector3(1, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), this.mesh.rotation.y);
+
+            const moveVector = new THREE.Vector3();
+
+            // Strafing Logic (Corrected)
+            moveVector.addScaledVector(forward, -moveZ);
+            moveVector.addScaledVector(right, -moveX);
+
+            if (moveVector.length() > 0) {
+                moveVector.normalize();
+                moveVector.multiplyScalar(this.speed * delta);
+                this.position.add(moveVector);
+            }
+        }
+
+        // Apply Knockback Velocity (Always apply)
         this.position.x += this.knockbackVelocity.x * delta;
         this.position.z += this.knockbackVelocity.z * delta;
 
@@ -384,7 +408,7 @@ export class Player {
             this.knockbackVelocity.set(0, 0, 0);
         }
 
-        // Raycast for Ground/Platform Detection
+        // Raycast for Ground/Platform Detection (Always check)
         let groundHeight = 0;
         if (collidables && collidables.length > 0) {
             // Cast ray from slightly above player position downwards
@@ -396,21 +420,20 @@ export class Player {
             const intersects = this.raycaster.intersectObjects(collidables, true); // Recursive check
 
             if (intersects.length > 0) {
-                // Find the highest intersection that is below the player's feet (plus some tolerance)
-                // intersects are sorted by distance.
-                // We want the first hit that is reasonable.
                 const hit = intersects[0];
-                // If the hit point is close to our current Y (or below us), treat it as ground
-                // hit.point.y is the world height of the collision
                 groundHeight = hit.point.y;
             }
         }
 
-        // Jump & Gravity
+        // Jump & Gravity (Always check)
+        if (input.jump) {
+            console.log(`Jump Input Detected. OnGround: ${this.onGround}`);
+        }
         if (this.onGround && input.jump) {
             this.velocity.y = this.jumpStrength;
             this.onGround = false;
             if (this.audioManager) this.audioManager.playJump();
+            console.log("JUMPED!");
         }
 
         // Apply Gravity
@@ -423,9 +446,6 @@ export class Player {
             this.velocity.y = 0;
             this.onGround = true;
         } else {
-            // If we walked off a platform, we are no longer on ground (unless jumping)
-            // But we need to be careful not to flicker onGround state when just standing
-            // Simple check: if we are significantly above groundHeight and falling, we are in air
             if (this.position.y > groundHeight + 0.1 && this.velocity.y < 0) {
                 this.onGround = false;
             }
@@ -433,13 +453,13 @@ export class Player {
 
         this.mesh.position.copy(this.position);
 
-        // Combat Update
+        // Combat Update (Always check)
         this.updateAttack(delta, input, entities);
 
-        // Enemy Collision (Knockback)
+        // Enemy Collision (Knockback) (Always check)
         this.checkEnemyCollision(entities);
 
-        // Environment Collision (Trees, Rocks)
+        // Environment Collision (Trees, Rocks) (Always check)
         this.checkEnvironmentCollision(entities);
     }
 
@@ -482,8 +502,6 @@ export class Player {
 
                 this.position.x = entity.mesh.position.x + pushX;
                 this.position.z = entity.mesh.position.z + pushZ;
-
-                // console.log(`Env Collision with ${entity.constructor.name}: Pushed to ${this.position.x.toFixed(2)}, ${this.position.z.toFixed(2)}`);
             }
         }
     }
@@ -509,7 +527,6 @@ export class Player {
                     this.velocity.y = 5.0;
                     this.onGround = false;
 
-                    // console.log('Player hit by slime! Knockback!');
                     if (this.audioManager) this.audioManager.playHit();
                 }
             }

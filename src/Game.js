@@ -25,14 +25,35 @@ export class Game {
         document.body.appendChild(VRButton.createButton(this.renderer));
 
         // Audio
+        // Audio
         this.audioManager = new AudioManager();
-        // Start BGM on first interaction
-        window.addEventListener('click', () => {
-            this.audioManager.startBGM();
+
+        // Click to Start Overlay
+        const overlay = document.createElement('div');
+        overlay.style.position = 'absolute';
+        overlay.style.top = '0';
+        overlay.style.left = '0';
+        overlay.style.width = '100%';
+        overlay.style.height = '100%';
+        overlay.style.backgroundColor = 'rgba(0,0,0,0.7)';
+        overlay.style.color = 'white';
+        overlay.style.display = 'flex';
+        overlay.style.justifyContent = 'center';
+        overlay.style.alignItems = 'center';
+        overlay.style.fontSize = '24px';
+        overlay.style.cursor = 'pointer';
+        overlay.innerHTML = 'Click to Start';
+        document.body.appendChild(overlay);
+
+        overlay.addEventListener('click', () => {
+            overlay.style.display = 'none';
             this.audioManager.resumeContext();
-        }, { once: true });
+            // Ensure focus is on window
+            window.focus();
+        });
+
+        // Start BGM on first interaction (backup)
         window.addEventListener('keydown', () => {
-            this.audioManager.startBGM();
             this.audioManager.resumeContext();
         }, { once: true });
 
@@ -61,184 +82,6 @@ export class Game {
 
         // Player
         this.player = new Player(this.scene, this.audioManager); // Pass audioManager
-        this.entityManager.add(this.player);
-
-        // Environment
-        this.collidables = []; // Array to store objects the player can stand on
-        this.populateWorld();
-
-        // Build Mode State
-        this.buildMode = false;
-        this.buildCooldown = 0;
-        this.ghostBlock = this.createGhostBlock();
-        this.scene.add(this.ghostBlock);
-
-        this.clock = new THREE.Clock();
-
-        window.addEventListener('resize', this.onWindowResize.bind(this));
-
-        this.camera.lookAt(this.player.position);
-    }
-
-    populateWorld() {
-        // Trees
-        for (let i = 0; i < 20; i++) {
-            const x = (Math.random() - 0.5) * 40;
-            const z = (Math.random() - 0.5) * 40;
-            // Avoid center area
-            if (Math.abs(x) < 3 && Math.abs(z) < 3) continue;
-
-            const tree = new Tree(x, z);
-            this.entityManager.add(tree);
-        }
-
-        // Rocks
-        for (let i = 0; i < 15; i++) {
-            const x = (Math.random() - 0.5) * 40;
-            const z = (Math.random() - 0.5) * 40;
-            // Avoid center area
-            if (Math.abs(x) < 2 && Math.abs(z) < 2) continue;
-
-            const scale = 0.5 + Math.random() * 1.0;
-            const rock = new Rock(x, z, scale);
-            this.entityManager.add(rock);
-
-            // Add rock mesh to collidables
-            this.collidables.push(rock.mesh);
-        }
-
-        // Slimes
-        for (let i = 0; i < 10; i++) {
-            const x = (Math.random() - 0.5) * 30;
-            const z = (Math.random() - 0.5) * 30;
-            // Avoid immediate start area
-            if (Math.abs(x) < 5 && Math.abs(z) < 5) continue;
-
-            const slime = new Slime(x, z);
-            this.entityManager.add(slime);
-        }
-    }
-
-    createGhostBlock() {
-        const geometry = new THREE.BoxGeometry(1, 1, 1);
-        const material = new THREE.MeshBasicMaterial({
-            color: 0x00FF00,
-            transparent: true,
-            opacity: 0.5,
-            wireframe: true
-        });
-        // Raycast from camera center
-        const raycaster = new THREE.Raycaster();
-        raycaster.setFromCamera(new THREE.Vector2(0, 0), this.camera);
-
-        // Intersect with everything (ground, objects, blocks)
-        const interactables = [...this.collidables];
-        // Add ground manually if not in collidables (it's not added in constructor, let's fix that or just add it here)
-        // Actually ground is not in this.collidables in constructor.
-        // But we want to build on ground.
-        // Let's find ground mesh. It's the 3rd child added to scene (ambient, directional, ground).
-        // Better to keep track of it.
-        // For now, let's just iterate scene children or assume ground is at y=0.
-        // Wait, I can just add ground to collidables in constructor?
-        // No, collidables is for "standing on". Ground is implicit in Player.js?
-        // Player.js: "Raycast for Ground/Platform Detection". It uses collidables.
-        // If collidables is empty, groundHeight is 0.
-        // So Player.js assumes y=0 is ground if no collision.
-        // But for building, we need to raycast against the ground plane.
-
-        // Let's add a ground plane for raycasting here.
-        const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
-        const target = new THREE.Vector3();
-        const ray = raycaster.ray;
-
-        // Check intersection with ground plane
-        let groundHit = null;
-        const distanceToGround = ray.intersectPlane(groundPlane, target);
-        if (distanceToGround !== null) {
-            groundHit = {
-                point: target,
-                face: { normal: new THREE.Vector3(0, 1, 0) }, // Up normal
-                object: { userData: { type: 'ground' } }
-            };
-        }
-
-        // Check intersection with entities
-        this.entityManager.entities.forEach(e => interactables.push(e.mesh));
-        const intersects = raycaster.intersectObjects(interactables, true);
-
-        let hit = null;
-        if (intersects.length > 0) {
-            hit = intersects[0];
-            // If ground is closer, use ground
-            if (groundHit && distanceToGround < hit.distance) {
-                hit = groundHit;
-            }
-        } else {
-            hit = groundHit;
-        }
-
-        if (hit) {
-            const point = hit.point;
-            const normal = hit.face.normal;
-
-            // Calculate Grid Position
-            const targetPos = point.clone().add(normal.clone().multiplyScalar(0.5));
-
-            const gridX = Math.round(targetPos.x);
-            const gridY = Math.round(targetPos.y);
-            const gridZ = Math.round(targetPos.z);
-
-            this.ghostBlock.position.set(gridX, gridY, gridZ);
-            this.ghostBlock.visible = true;
-
-            // Place Block
-            if (input.placeBlock && this.buildCooldown <= 0) {
-                const block = new Block(gridX, gridY, gridZ, 'dirt');
-                this.entityManager.add(block);
-                this.collidables.push(block.mesh); // Add to collidables for player physics
-                this.buildCooldown = 0.2;
-            }
-
-            // Remove Block
-            if (input.removeBlock && this.buildCooldown <= 0) {
-                if (hit.object.userData.entity instanceof Block) {
-                    const blockToRemove = hit.object.userData.entity;
-                    blockToRemove.shouldRemove = true; // EntityManager will handle cleanup
-
-                    // Remove from collidables
-                    const index = this.collidables.indexOf(blockToRemove.mesh);
-                    if (index > -1) this.collidables.splice(index, 1);
-
-                    this.buildCooldown = 0.2;
-                }
-            }
-
-        } else {
-            this.ghostBlock.visible = false;
-        }
-    }
-
-    start() {
-        this.renderer.setAnimationLoop(this.render.bind(this));
-    }
-
-    onWindowResize() {
-        this.camera.aspect = window.innerWidth / window.innerHeight;
-        this.camera.updateProjectionMatrix();
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
-    }
-
-    render() {
-        const delta = this.clock.getDelta();
-        const time = this.clock.getElapsedTime();
-        const inputState = this.input.getState();
-
-        this.updateBuildMode(delta, inputState);
-
-        this.entityManager.update(delta, inputState, time, this.collidables);
-
-        // Simple camera follow for desktop
-        // In VR, the camera is controlled by the headset
         this.entityManager.add(this.player);
 
         // Environment
@@ -416,23 +259,42 @@ export class Game {
     }
 
     render() {
-        const delta = this.clock.getDelta();
-        const time = this.clock.getElapsedTime();
-        const inputState = this.input.getState();
+        try {
+            const delta = this.clock.getDelta();
+            const time = this.clock.getElapsedTime();
+            const inputState = this.input.getState();
 
-        this.updateBuildMode(delta, inputState);
+            this.updateBuildMode(delta, inputState);
 
-        this.entityManager.update(delta, inputState, time, this.collidables);
+            this.entityManager.update(delta, inputState, time, this.collidables);
 
-        // Simple camera follow for desktop
-        // In VR, the camera is controlled by the headset
-        if (!this.renderer.xr.isPresenting) {
-            this.camera.position.x = this.player.position.x;
-            this.camera.position.z = this.player.position.z + 3;
-            this.camera.lookAt(this.player.position);
+            // Simple camera follow for desktop
+            // In VR, the camera is controlled by the headset
+            if (!this.renderer.xr.isPresenting) {
+                // TPS Camera: Follow player rotation
+                // Offset needs to be "behind" the player.
+                // Player faces +Z (at rot 0). So "behind" is -Z.
+                const offset = new THREE.Vector3(0, 2.5, -4); // Up 2.5, Back 4 (Negative Z)
+                offset.applyAxisAngle(new THREE.Vector3(0, 1, 0), this.player.mesh.rotation.y);
 
+                const targetPos = this.player.position.clone().add(offset);
+
+                // Smooth camera follow (optional, but nice)
+                // this.camera.position.lerp(targetPos, 0.1); 
+                // For now, direct copy to prevent lag
+                this.camera.position.copy(targetPos);
+
+                // Look at player head/center
+                const lookAtPos = this.player.position.clone().add(new THREE.Vector3(0, 1.5, 0));
+                this.camera.lookAt(lookAtPos);
+            }
+
+            this.renderer.render(this.scene, this.camera);
+        } catch (e) {
+            console.error("Game Loop Error:", e);
+            // Stop the loop to prevent flooding
+            this.renderer.setAnimationLoop(null);
+            alert("Game Crashed: " + e.message);
         }
-
-        this.renderer.render(this.scene, this.camera);
     }
 }

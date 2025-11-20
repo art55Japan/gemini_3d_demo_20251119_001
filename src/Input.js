@@ -4,14 +4,31 @@ export class Input {
         this.keys = {
             w: false, a: false, s: false, d: false,
             arrowup: false, arrowleft: false, arrowdown: false, arrowright: false,
-            ' ': false, f: false, b: false
+            up: false, left: false, down: false, right: false, // Legacy keys
+            ' ': false, f: false, b: false, q: false, e: false
         };
 
         this.mouseDown = false;
 
         window.addEventListener('keydown', (e) => {
             const key = e.key.toLowerCase();
-            if (this.keys.hasOwnProperty(key)) this.keys[key] = true;
+            const code = e.code;
+            console.log(`Key Down: key='${key}', code='${code}'`); // Debug log active
+
+            if (this.keys.hasOwnProperty(key)) {
+                this.keys[key] = true;
+            }
+
+            // Robust Space check
+            if (key === ' ' || code === 'Space') {
+                this.keys[' '] = true;
+                e.preventDefault();
+            }
+
+            // Prevent default behavior for arrow keys
+            if (key.startsWith('arrow') || ['up', 'down', 'left', 'right'].includes(key)) {
+                e.preventDefault();
+            }
         });
         window.addEventListener('keyup', (e) => {
             const key = e.key.toLowerCase();
@@ -44,13 +61,22 @@ export class Input {
     }
 
     getState() {
-        const move = { x: 0, z: 0, jump: false, attack: false, mouse: { ...this.mouse } };
+        const move = {
+            x: 0, z: 0,
+            jump: false, attack: false,
+            rotateLeft: false, rotateRight: false,
+            mouse: { ...this.mouse }
+        };
 
         // Keyboard
-        if (this.keys.w || this.keys.arrowup) move.z -= 1;
-        if (this.keys.s || this.keys.arrowdown) move.z += 1;
-        if (this.keys.a || this.keys.arrowleft) move.x -= 1;
-        if (this.keys.d || this.keys.arrowright) move.x += 1;
+        if (this.keys.w || this.keys.arrowup || this.keys.up) move.z -= 1;
+        if (this.keys.s || this.keys.arrowdown || this.keys.down) move.z += 1;
+        if (this.keys.a || this.keys.arrowleft || this.keys.left) move.x -= 1;
+        if (this.keys.d || this.keys.arrowright || this.keys.right) move.x += 1;
+
+        // Rotation
+        if (this.keys.q) move.rotateLeft = true;
+        if (this.keys.e) move.rotateRight = true;
 
         // Jump Input
         if (this.keys[' ']) move.jump = true;
