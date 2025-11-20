@@ -8,6 +8,7 @@ import { Rock } from './Rock.js';
 import { Slime } from './Slime.js';
 import { Block } from './Block.js';
 import { AudioManager } from './AudioManager.js';
+import { CameraManager } from './CameraManager.js';
 
 export class Game {
     constructor() {
@@ -99,6 +100,9 @@ export class Game {
         window.addEventListener('resize', this.onWindowResize.bind(this));
 
         this.camera.lookAt(this.player.position);
+
+        // Camera Manager
+        this.cameraManager = new CameraManager(this.camera, this.player, this.renderer);
     }
 
     populateWorld() {
@@ -253,8 +257,7 @@ export class Game {
     }
 
     onWindowResize() {
-        this.camera.aspect = window.innerWidth / window.innerHeight;
-        this.camera.updateProjectionMatrix();
+        this.cameraManager.resize(window.innerWidth, window.innerHeight);
         this.renderer.setSize(window.innerWidth, window.innerHeight);
     }
 
@@ -268,26 +271,9 @@ export class Game {
 
             this.entityManager.update(delta, inputState, time, this.collidables);
 
-            // Simple camera follow for desktop
-            // In VR, the camera is controlled by the headset
-            if (!this.renderer.xr.isPresenting) {
-                // TPS Camera: Follow player rotation
-                // Offset needs to be "behind" the player.
-                // Player faces +Z (at rot 0). So "behind" is -Z.
-                const offset = new THREE.Vector3(0, 2.5, -4); // Up 2.5, Back 4 (Negative Z)
-                offset.applyAxisAngle(new THREE.Vector3(0, 1, 0), this.player.mesh.rotation.y);
+            this.cameraManager.update(delta);
 
-                const targetPos = this.player.position.clone().add(offset);
-
-                // Smooth camera follow (optional, but nice)
-                // this.camera.position.lerp(targetPos, 0.1); 
-                // For now, direct copy to prevent lag
-                this.camera.position.copy(targetPos);
-
-                // Look at player head/center
-                const lookAtPos = this.player.position.clone().add(new THREE.Vector3(0, 1.5, 0));
-                this.camera.lookAt(lookAtPos);
-            }
+            this.renderer.render(this.scene, this.camera);
 
             this.renderer.render(this.scene, this.camera);
         } catch (e) {
