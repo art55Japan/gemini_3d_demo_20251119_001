@@ -44,21 +44,21 @@ export class Player {
         }
 
         // Physics Update (Movement, Gravity, Jump)
-        this.physics.update(delta, input);
+        this.physics.update(delta, input, collidables);
 
         // Ground Detection & Collision
-        const groundHeight = this.collision.getGroundHeight(collidables);
+        // const groundHeight = this.collision.getGroundHeight(collidables);
 
         // Apply Ground Constraints
-        if (this.position.y <= groundHeight) {
-            this.position.y = groundHeight;
-            this.physics.velocity.y = 0;
-            this.physics.onGround = true;
-        } else {
-            if (this.position.y > groundHeight + 0.1 && this.physics.velocity.y < 0) {
-                this.physics.onGround = false;
-            }
-        }
+        // if (this.position.y <= groundHeight) {
+        //     this.position.y = groundHeight;
+        //     this.physics.velocity.y = 0;
+        //     this.physics.onGround = true;
+        // } else {
+        //     if (this.position.y > groundHeight + 0.1 && this.physics.velocity.y < 0) {
+        //         this.physics.onGround = false;
+        //     }
+        // }
 
         // Sync Mesh Position
         this.mesh.position.copy(this.position);
@@ -70,6 +70,6 @@ export class Player {
         this.collision.checkEnemies(entities, this.physics);
 
         // Environment Collision
-        this.collision.checkEnvironment(entities);
+        // this.collision.checkEnvironment(entities);
     }
 }

@@ -169,6 +169,17 @@ export class Game {
 
         if (!this.buildMode) return;
 
+        const hit = this.getRaycastHit(input);
+
+        this.updateGhostBlock(hit);
+
+        if (hit) {
+            this.handleBlockPlacement(input, hit);
+            this.handleBlockRemoval(input, hit);
+        }
+    }
+
+    getRaycastHit(input) {
         // Raycast from mouse position
         const raycaster = new THREE.Raycaster();
         raycaster.setFromCamera(new THREE.Vector2(input.mouse.x, input.mouse.y), this.camera);
@@ -210,7 +221,10 @@ export class Game {
         } else {
             hit = groundHit;
         }
+        return hit;
+    }
 
+    updateGhostBlock(hit) {
         if (hit) {
             const point = hit.point;
             const normal = hit.face.normal;
@@ -224,31 +238,41 @@ export class Game {
 
             this.ghostBlock.position.set(gridX, gridY, gridZ);
             this.ghostBlock.visible = true;
-
-            // Place Block
-            if (input.placeBlock && this.buildCooldown <= 0) {
-                const block = new Block(gridX, gridY, gridZ, 'dirt');
-                this.entityManager.add(block);
-                this.collidables.push(block.mesh); // Add to collidables for player physics
-                this.buildCooldown = 0.2;
-            }
-
-            // Remove Block
-            if (input.removeBlock && this.buildCooldown <= 0) {
-                if (hit.object.userData.entity instanceof Block) {
-                    const blockToRemove = hit.object.userData.entity;
-                    blockToRemove.shouldRemove = true; // EntityManager will handle cleanup
-
-                    // Remove from collidables
-                    const index = this.collidables.indexOf(blockToRemove.mesh);
-                    if (index > -1) this.collidables.splice(index, 1);
-
-                    this.buildCooldown = 0.2;
-                }
-            }
-
         } else {
             this.ghostBlock.visible = false;
+        }
+    }
+
+    handleBlockPlacement(input, hit) {
+        // Place Block
+        if (input.placeBlock && this.buildCooldown <= 0) {
+            const point = hit.point;
+            const normal = hit.face.normal;
+            const targetPos = point.clone().add(normal.clone().multiplyScalar(0.5));
+            const gridX = Math.round(targetPos.x);
+            const gridY = Math.round(targetPos.y);
+            const gridZ = Math.round(targetPos.z);
+
+            const block = new Block(gridX, gridY, gridZ, 'dirt');
+            this.entityManager.add(block);
+            this.collidables.push(block.mesh); // Add to collidables for player physics
+            this.buildCooldown = 0.2;
+        }
+    }
+
+    handleBlockRemoval(input, hit) {
+        // Remove Block
+        if (input.removeBlock && this.buildCooldown <= 0) {
+            if (hit.object.userData.entity instanceof Block) {
+                const blockToRemove = hit.object.userData.entity;
+                blockToRemove.shouldRemove = true; // EntityManager will handle cleanup
+
+                // Remove from collidables
+                const index = this.collidables.indexOf(blockToRemove.mesh);
+                if (index > -1) this.collidables.splice(index, 1);
+
+                this.buildCooldown = 0.2;
+            }
         }
     }
 
