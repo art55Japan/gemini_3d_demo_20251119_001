@@ -8,6 +8,7 @@ import { CameraManager } from './CameraManager.js';
 import { WorldManager } from './WorldManager.js';
 import { BuildSystem } from './BuildSystem.js';
 import { SaveManager } from './SaveManager.js';
+import { SaveLoadUI } from './SaveLoadUI.js';
 
 export class Game {
     constructor() {
@@ -41,7 +42,7 @@ export class Game {
         overlay.style.alignItems = 'center';
         overlay.style.fontSize = '24px';
         overlay.style.cursor = 'pointer';
-        overlay.innerHTML = 'Click to Start<br><span style="font-size: 16px">WASD/Arrows to Move | Space to Jump | Click to Attack<br>B: Build Mode | K: Save | L: Load</span>';
+        overlay.innerHTML = 'Click to Start<br><span style="font-size: 16px">WASD/Arrows to Move | Space to Jump | Click to Attack<br>B: Build Mode | K: Quick Save | L: Quick Load | M: Data Menu</span>';
         document.body.appendChild(overlay);
 
         overlay.addEventListener('click', () => {
@@ -105,8 +106,10 @@ export class Game {
 
         // Save Manager
         this.saveManager = new SaveManager(this);
+        this.saveLoadUI = new SaveLoadUI(this, this.saveManager);
         this.lastSaveTime = 0;
         this.lastLoadTime = 0;
+        this.lastMenuTime = 0;
 
         this.createNotificationUI();
     }
@@ -156,21 +159,39 @@ export class Game {
             const time = this.clock.getElapsedTime();
             const inputState = this.input.getState();
 
+            // Quick Save/Load (K/L)
+            if (inputState.save && time - this.lastSaveTime > 1.0) {
+                this.saveManager.quickSave();
+                this.lastSaveTime = time;
+            }
+            if (inputState.load && time - this.lastLoadTime > 1.0) {
+                this.saveManager.quickLoad();
+                this.lastLoadTime = time;
+            }
+
+            // Data Management Menu (M)
+            if (inputState.menu && time - this.lastMenuTime > 0.5) {
+                if (this.saveLoadUI.isVisible) {
+                    this.saveLoadUI.hide();
+                } else {
+                    this.saveLoadUI.show();
+                }
+                this.lastMenuTime = time;
+            }
+
+            // If UI is open, skip game updates (Pause)
+            if (this.saveLoadUI.isVisible) {
+                // Still render scene but maybe with a blur or just static?
+                // For now, just render
+                this.renderer.render(this.scene, this.camera);
+                return;
+            }
+
             this.buildSystem.update(delta, inputState);
 
             this.entityManager.update(delta, inputState, time, this.collidables);
 
             this.cameraManager.update(delta, inputState);
-
-            // Save/Load
-            if (inputState.save && time - this.lastSaveTime > 1.0) {
-                this.saveManager.save();
-                this.lastSaveTime = time;
-            }
-            if (inputState.load && time - this.lastLoadTime > 1.0) {
-                this.saveManager.load();
-                this.lastLoadTime = time;
-            }
 
             this.renderer.render(this.scene, this.camera);
 

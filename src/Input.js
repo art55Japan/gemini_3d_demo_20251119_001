@@ -6,7 +6,7 @@ export class Input {
             arrowup: false, arrowleft: false, arrowdown: false, arrowright: false,
             up: false, left: false, down: false, right: false, // Legacy keys
             ' ': false, f: false, b: false, q: false, e: false, v: false,
-            k: false, l: false
+            k: false, l: false, m: false
         };
 
         this.mouseDown = false;
@@ -142,6 +142,7 @@ export class Input {
 
         if (this.keys.k) move.save = true;
         if (this.keys.l) move.load = true;
+        if (this.keys.m) move.menu = true;
 
         return move;
     }
