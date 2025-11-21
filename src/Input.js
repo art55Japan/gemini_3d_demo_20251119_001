@@ -5,7 +5,8 @@ export class Input {
             w: false, a: false, s: false, d: false,
             arrowup: false, arrowleft: false, arrowdown: false, arrowright: false,
             up: false, left: false, down: false, right: false, // Legacy keys
-            ' ': false, f: false, b: false, q: false, e: false, v: false
+            ' ': false, f: false, b: false, q: false, e: false, v: false,
+            k: false, l: false
         };
 
         this.mouseDown = false;
@@ -138,6 +139,9 @@ export class Input {
         }
         if (this.mouseDown) move.placeBlock = true; // Left click
         if (this.rightMouseDown) move.removeBlock = true; // Right click
+
+        if (this.keys.k) move.save = true;
+        if (this.keys.l) move.load = true;
 
         return move;
     }

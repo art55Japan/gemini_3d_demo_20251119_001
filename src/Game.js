@@ -7,6 +7,7 @@ import { AudioManager } from './AudioManager.js';
 import { CameraManager } from './CameraManager.js';
 import { WorldManager } from './WorldManager.js';
 import { BuildSystem } from './BuildSystem.js';
+import { SaveManager } from './SaveManager.js';
 
 export class Game {
     constructor() {
@@ -40,7 +41,7 @@ export class Game {
         overlay.style.alignItems = 'center';
         overlay.style.fontSize = '24px';
         overlay.style.cursor = 'pointer';
-        overlay.innerHTML = 'Click to Start';
+        overlay.innerHTML = 'Click to Start<br><span style="font-size: 16px">WASD/Arrows to Move | Space to Jump | Click to Attack<br>B: Build Mode | K: Save | L: Load</span>';
         document.body.appendChild(overlay);
 
         overlay.addEventListener('click', () => {
@@ -101,6 +102,43 @@ export class Game {
 
         // Camera Manager
         this.cameraManager = new CameraManager(this.camera, this.player, this.renderer);
+
+        // Save Manager
+        this.saveManager = new SaveManager(this);
+        this.lastSaveTime = 0;
+        this.lastLoadTime = 0;
+
+        this.createNotificationUI();
+    }
+
+    createNotificationUI() {
+        this.notification = document.createElement('div');
+        this.notification.style.position = 'absolute';
+        this.notification.style.top = '20px';
+        this.notification.style.right = '20px';
+        this.notification.style.padding = '10px 20px';
+        this.notification.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+        this.notification.style.color = 'white';
+        this.notification.style.borderRadius = '5px';
+        this.notification.style.fontFamily = 'sans-serif';
+        this.notification.style.display = 'none';
+        this.notification.style.transition = 'opacity 0.5s';
+        document.body.appendChild(this.notification);
+    }
+
+    showNotification(message, duration = 2000) {
+        this.notification.innerText = message;
+        this.notification.style.display = 'block';
+        this.notification.style.opacity = '1';
+
+        if (this.notificationTimeout) clearTimeout(this.notificationTimeout);
+
+        this.notificationTimeout = setTimeout(() => {
+            this.notification.style.opacity = '0';
+            setTimeout(() => {
+                this.notification.style.display = 'none';
+            }, 500);
+        }, duration);
     }
 
     start() {
@@ -123,6 +161,16 @@ export class Game {
             this.entityManager.update(delta, inputState, time, this.collidables);
 
             this.cameraManager.update(delta, inputState);
+
+            // Save/Load
+            if (inputState.save && time - this.lastSaveTime > 1.0) {
+                this.saveManager.save();
+                this.lastSaveTime = time;
+            }
+            if (inputState.load && time - this.lastLoadTime > 1.0) {
+                this.saveManager.load();
+                this.lastLoadTime = time;
+            }
 
             this.renderer.render(this.scene, this.camera);
 
