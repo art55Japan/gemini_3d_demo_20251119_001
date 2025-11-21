@@ -13,7 +13,7 @@ export class Input {
         window.addEventListener('keydown', (e) => {
             const key = e.key.toLowerCase();
             const code = e.code;
-            console.log(`Key Down: key='${key}', code='${code}'`); // Debug log active
+            // console.log(`Key Down: key='${key}', code='${code}'`); // Debug log active
 
             if (this.keys.hasOwnProperty(key)) {
                 this.keys[key] = true;
@@ -71,12 +71,10 @@ export class Input {
         // Keyboard
         if (this.keys.w || this.keys.arrowup || this.keys.up) move.z -= 1;
         if (this.keys.s || this.keys.arrowdown || this.keys.down) move.z += 1;
-        if (this.keys.a || this.keys.arrowleft || this.keys.left) move.x -= 1;
-        if (this.keys.d || this.keys.arrowright || this.keys.right) move.x += 1;
 
-        // Rotation
-        if (this.keys.q) move.rotateLeft = true;
-        if (this.keys.e) move.rotateRight = true;
+        // Rotation (Replaces Strafing)
+        if (this.keys.a || this.keys.arrowleft || this.keys.left) move.rotateLeft = true;
+        if (this.keys.d || this.keys.arrowright || this.keys.right) move.rotateRight = true;
 
         // Jump Input
         if (this.keys[' ']) move.jump = true;
