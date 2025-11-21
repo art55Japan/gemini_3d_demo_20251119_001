@@ -295,7 +295,7 @@ export class Game {
 
             this.entityManager.update(delta, inputState, time, this.collidables);
 
-            this.cameraManager.update(delta);
+            this.cameraManager.update(delta, inputState);
 
             this.renderer.render(this.scene, this.camera);
 
