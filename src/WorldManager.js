@@ -9,41 +9,39 @@ export class WorldManager {
     }
 
     populate() {
-        // Trees
-        for (let i = 0; i < 20; i++) {
-            const x = (Math.random() - 0.5) * 40;
-            const z = (Math.random() - 0.5) * 40;
-            // Avoid center area
-            if (Math.abs(x) < 3 && Math.abs(z) < 3) continue;
+        // Trees - generate positions then filter
+        const treePositions = Array.from({ length: 20 }, () => ({
+            x: (Math.random() - 0.5) * 40,
+            z: (Math.random() - 0.5) * 40
+        })).filter(pos => Math.abs(pos.x) >= 3 || Math.abs(pos.z) >= 3);
 
-            const tree = new Tree(x, z);
+        treePositions.forEach(pos => {
+            const tree = new Tree(pos.x, pos.z);
             this.entityManager.add(tree);
-        }
+        });
 
-        // Rocks
-        for (let i = 0; i < 15; i++) {
-            const x = (Math.random() - 0.5) * 40;
-            const z = (Math.random() - 0.5) * 40;
-            // Avoid center area
-            if (Math.abs(x) < 2 && Math.abs(z) < 2) continue;
+        // Rocks - generate positions then filter
+        const rockPositions = Array.from({ length: 15 }, () => ({
+            x: (Math.random() - 0.5) * 40,
+            z: (Math.random() - 0.5) * 40,
+            scale: 0.5 + Math.random() * 1.0
+        })).filter(pos => Math.abs(pos.x) >= 2 || Math.abs(pos.z) >= 2);
 
-            const scale = 0.5 + Math.random() * 1.0;
-            const rock = new Rock(x, z, scale);
+        rockPositions.forEach(pos => {
+            const rock = new Rock(pos.x, pos.z, pos.scale);
             this.entityManager.add(rock);
-
-            // Add rock mesh to collidables
             this.collidables.push(rock.mesh);
-        }
+        });
 
-        // Slimes
-        for (let i = 0; i < 10; i++) {
-            const x = (Math.random() - 0.5) * 30;
-            const z = (Math.random() - 0.5) * 30;
-            // Avoid immediate start area
-            if (Math.abs(x) < 5 && Math.abs(z) < 5) continue;
+        // Slimes - generate positions then filter
+        const slimePositions = Array.from({ length: 10 }, () => ({
+            x: (Math.random() - 0.5) * 30,
+            z: (Math.random() - 0.5) * 30
+        })).filter(pos => Math.abs(pos.x) >= 5 || Math.abs(pos.z) >= 5);
 
-            const slime = new Slime(x, z);
+        slimePositions.forEach(pos => {
+            const slime = new Slime(pos.x, pos.z);
             this.entityManager.add(slime);
-        }
+        });
     }
 }

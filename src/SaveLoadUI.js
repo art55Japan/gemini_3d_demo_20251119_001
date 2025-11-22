@@ -118,7 +118,8 @@ export class SaveLoadUI {
 
         saveBtn.onclick = (e) => {
             e.stopPropagation();
-            if (!isNew && !confirm(`Overwrite Slot ${slot.id}?`)) return;
+            console.log("Save button clicked");
+            // if (!isNew && !confirm(`Overwrite Slot ${slot.id}?`)) return;
 
             const id = isNew ? Date.now().toString() : slot.id;
             if (this.saveManager.save(id)) {
@@ -141,11 +142,12 @@ export class SaveLoadUI {
 
             loadBtn.onclick = (e) => {
                 e.stopPropagation();
-                if (confirm(`Load Slot ${slot.id}? Unsaved progress will be lost.`)) {
-                    if (this.saveManager.load(slot.id)) {
-                        this.hide();
-                    }
+                console.log("Load button clicked for slot", slot.id);
+                // if (confirm(`Load Slot ${slot.id}? Unsaved progress will be lost.`)) {
+                if (this.saveManager.load(slot.id)) {
+                    this.hide();
                 }
+                // }
             };
             actions.appendChild(loadBtn);
 
@@ -160,10 +162,11 @@ export class SaveLoadUI {
             deleteBtn.style.cursor = 'pointer';
             deleteBtn.onclick = (e) => {
                 e.stopPropagation();
-                if (confirm('Are you sure you want to delete this save?')) {
-                    this.saveManager.delete(slot.id);
-                    this.refreshList();
-                }
+                console.log("Delete button clicked for slot", slot.id);
+                // if (confirm('Are you sure you want to delete this save?')) {
+                this.saveManager.delete(slot.id);
+                this.refreshList();
+                // }
             };
             actions.appendChild(deleteBtn);
         }

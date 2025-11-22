@@ -2,8 +2,6 @@ import { Block } from './Block.js';
 import { Slime } from './Slime.js';
 import * as THREE from 'three';
 
-
-
 export class SaveManager {
     constructor(game) {
         this.game = game;
@@ -23,23 +21,22 @@ export class SaveManager {
             enemies: []
         };
 
-        // Save Entities
-        this.game.entityManager.entities.forEach(entity => {
-            if (entity instanceof Block) {
-                saveData.blocks.push({
-                    x: entity.mesh.position.x,
-                    y: entity.mesh.position.y,
-                    z: entity.mesh.position.z,
-                    type: entity.type
+        // Save Entities using polymorphism
+        if (Array.isArray(this.game.entityManager.entities)) {
+            this.game.entityManager.entities
+                .filter(entity => typeof entity.isSaveable === 'function' && entity.isSaveable())
+                .forEach(entity => {
+                    const data = entity.toSaveData();
+                    if (data.type === 'block') {
+                        saveData.blocks.push(data);
+                    } else if (data.type === 'slime') {
+                        saveData.enemies.push(data);
+                    }
                 });
-            } else if (entity instanceof Slime && !entity.isDead) {
-                saveData.enemies.push({
-                    type: 'slime',
-                    x: entity.position.x,
-                    z: entity.position.z
-                });
-            }
-        });
+        } else {
+            console.error("entityManager.entities is not an array!", this.game.entityManager.entities);
+        }
+
         return saveData;
     }
 
@@ -54,23 +51,32 @@ export class SaveManager {
 
         // Restore Blocks & Enemies
         if (saveData.blocks || saveData.enemies) {
-            // Clear existing entities (Blocks and Slimes)
-            const entitiesToRemove = this.game.entityManager.entities.filter(e => e instanceof Block || e instanceof Slime);
-            entitiesToRemove.forEach(e => {
-                e.shouldRemove = true;
-                if (e.mesh) {
-                    const idx = this.game.collidables.indexOf(e.mesh);
-                    if (idx > -1) this.game.collidables.splice(idx, 1);
-                }
-            });
+            // Clear existing entities (use isSaveable to identify saved entity types)
+            if (Array.isArray(this.game.entityManager.entities)) {
+                // Only remove entities that are explicitly saveable (e.g. Blocks, Slimes).
+                // Non-saveable entities (Trees, Rocks) should persist.
+                const entitiesToRemove = this.game.entityManager.entities.filter(e =>
+                    typeof e.isSaveable === 'function' && e.isSaveable()
+                );
 
-            // Force cleanup immediately
-            entitiesToRemove.forEach(e => this.game.entityManager.remove(e));
+                entitiesToRemove.forEach(e => {
+                    e.shouldRemove = true;
+                    if (e.mesh) {
+                        const idx = this.game.collidables.indexOf(e.mesh);
+                        if (idx > -1) this.game.collidables.splice(idx, 1);
+                    }
+                });
+
+                // Force cleanup immediately
+                entitiesToRemove.forEach(e => this.game.entityManager.remove(e));
+            } else {
+                console.error("entityManager.entities is not an array during restore!", this.game.entityManager.entities);
+            }
 
             // Add saved blocks
             if (saveData.blocks) {
                 saveData.blocks.forEach(blockData => {
-                    const block = new Block(blockData.x, blockData.y, blockData.z, blockData.type);
+                    const block = Block.fromSaveData(blockData);
                     this.game.entityManager.add(block);
                     this.game.collidables.push(block.mesh);
                 });
@@ -79,10 +85,8 @@ export class SaveManager {
             // Add saved enemies
             if (saveData.enemies) {
                 saveData.enemies.forEach(enemyData => {
-                    if (enemyData.type === 'slime') {
-                        const slime = new Slime(enemyData.x, enemyData.z);
-                        this.game.entityManager.add(slime);
-                    }
+                    const slime = Slime.fromSaveData(enemyData);
+                    this.game.entityManager.add(slime);
                 });
             }
         }

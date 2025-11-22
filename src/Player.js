@@ -36,29 +36,11 @@ export class Player {
 
         // Rotation (Manual)
         const rotationSpeed = 3.0;
-        if (input.rotateLeft) {
-            this.mesh.rotation.y += rotationSpeed * delta;
-        }
-        if (input.rotateRight) {
-            this.mesh.rotation.y -= rotationSpeed * delta;
-        }
+        const rotationDir = (input.rotateLeft ? 1 : 0) - (input.rotateRight ? 1 : 0);
+        this.mesh.rotation.y += rotationDir * rotationSpeed * delta;
 
         // Physics Update (Movement, Gravity, Jump)
         this.physics.update(delta, input, collidables);
-
-        // Ground Detection & Collision
-        // const groundHeight = this.collision.getGroundHeight(collidables);
-
-        // Apply Ground Constraints
-        // if (this.position.y <= groundHeight) {
-        //     this.position.y = groundHeight;
-        //     this.physics.velocity.y = 0;
-        //     this.physics.onGround = true;
-        // } else {
-        //     if (this.position.y > groundHeight + 0.1 && this.physics.velocity.y < 0) {
-        //         this.physics.onGround = false;
-        //     }
-        // }
 
         // Sync Mesh Position
         this.mesh.position.copy(this.position);
@@ -66,7 +48,16 @@ export class Player {
         // Combat Update
         this.combat.update(delta, input, entities);
 
-        // Unified Collision Handling (Polymorphic)
+        // Check Collisions with Enemies
+        this.checkCollisions(entities);
+    }
+
+    checkCollisions(entities) {
         this.collision.checkCollisions(entities, this.physics);
+    }
+
+    // Player is saved separately in SaveManager, so return false here
+    isSaveable() {
+        return false;
     }
 }

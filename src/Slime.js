@@ -1,6 +1,74 @@
 import * as THREE from 'three';
 import { Entity } from './Entity.js';
 
+// State Interface
+class SlimeState {
+    constructor(slime) {
+        this.slime = slime;
+    }
+    enter() { }
+    update(delta, time) { }
+    handleCollision(player, physics) { }
+    takeDamage() { }
+}
+
+class AliveState extends SlimeState {
+    update(delta, time) {
+        // Bounce Animation
+        const bounce = Math.sin((time + this.slime.timeOffset) * this.slime.bounceSpeed);
+
+        // Position Y change
+        const heightFactor = (bounce + 1) * 0.5;
+        this.slime.mesh.position.y = this.slime.originalY + heightFactor * this.slime.bounceHeight;
+
+        // Squash and Stretch
+        const scaleY = 0.8 + (bounce * 0.1);
+        const scaleXZ = 1.0 - (bounce * 0.05);
+        this.slime.mesh.scale.set(scaleXZ, scaleY, scaleXZ);
+
+        // Sync logical position
+        this.slime.position.copy(this.slime.mesh.position);
+    }
+
+    handleCollision(player, physics) {
+        const collisionRange = 0.8;
+        const slimePos = this.slime.mesh.position;
+        const dist = player.position.distanceTo(slimePos);
+
+        if (dist < collisionRange) {
+            console.log(`[HIT] Slime collision! Distance: ${dist.toFixed(2)}`);
+            const knockbackDir = player.position.clone().sub(slimePos).normalize();
+            physics.applyKnockback(knockbackDir, 15.0);
+            if (player.audioManager) player.audioManager.playHit();
+        }
+    }
+
+    takeDamage() {
+        this.slime.setState(new DeadState(this.slime));
+    }
+}
+
+class DeadState extends SlimeState {
+    update(delta, time) {
+        // Death Animation: Shrink
+        const shrinkSpeed = 2.0;
+        this.slime.mesh.scale.subScalar(shrinkSpeed * delta);
+
+        if (this.slime.mesh.scale.y <= 0.01) {
+            this.slime.mesh.scale.set(0, 0, 0);
+            this.slime.shouldRemove = true;
+        }
+    }
+
+    handleCollision(player, physics) {
+        // No collision
+    }
+
+    takeDamage() {
+        // Already dead
+    }
+}
+
 export class Slime extends Entity {
     constructor(x, z) {
         super();
@@ -18,36 +86,24 @@ export class Slime extends Entity {
         this.bounceSpeed = 3.0;
         this.bounceHeight = 0.3;
 
-        this.isDead = false;
+        this.currentState = new AliveState(this);
+    }
+
+    setState(newState) {
+        this.currentState = newState;
+        this.currentState.enter();
     }
 
     handleCollision(player, physics) {
-        if (this.isDead) return;
-
-        const collisionRange = 0.8;
-        // Use mesh position for accurate animation-based collision
-        const slimePos = this.mesh.position;
-        const dist = player.position.distanceTo(slimePos);
-
-        if (dist < collisionRange) {
-            console.log(`[HIT] Slime collision! Distance: ${dist.toFixed(2)}`);
-
-            const knockbackDir = player.position.clone().sub(slimePos).normalize();
-            physics.applyKnockback(knockbackDir, 15.0);
-
-            if (player.audioManager) player.audioManager.playHit();
-        }
+        this.currentState.handleCollision(player, physics);
     }
 
     update(delta, input, time) {
-        if (this.isDead) return;
+        this.currentState.update(delta, time);
+    }
 
-        // Simple Bounce Animation
-        const bounce = Math.sin((time + this.timeOffset) * this.bounceSpeed) * this.bounceHeight;
-        this.mesh.position.y = this.originalY + Math.abs(bounce);
-
-        // Sync logical position (optional, but good for consistency)
-        this._position.copy(this.mesh.position);
+    takeDamage() {
+        this.currentState.takeDamage();
     }
 
     createFeltTexture(colorHex) {
@@ -126,41 +182,25 @@ export class Slime extends Entity {
         highlightR.position.set(-0.03, 0.03, 0.07);
         eyeR.add(highlightR);
 
+
         return group;
     }
 
-    update(delta, input, time) {
-        if (this.isDead) {
-            // Death Animation: Shrink
-            const shrinkSpeed = 2.0;
-            this.mesh.scale.subScalar(shrinkSpeed * delta);
-
-            if (this.mesh.scale.y <= 0.01) {
-                this.mesh.scale.set(0, 0, 0);
-                this.shouldRemove = true;
-            }
-            return;
-        }
-
-        // Bounce Animation
-        const bounce = Math.sin((time + this.timeOffset) * this.bounceSpeed);
-
-        // Position Y change
-        // Map sin wave (-1 to 1) to (0 to 1) for height
-        const heightFactor = (bounce + 1) * 0.5;
-        this.mesh.position.y = this.originalY + heightFactor * this.bounceHeight;
-
-        // Squash and Stretch
-        // When hitting ground (bounce near -1), squash (scale Y down, X/Z up)
-        // When in air (bounce near 1), stretch (scale Y up, X/Z down)
-        const scaleY = 0.8 + (bounce * 0.1); // Base 0.8 +/- 0.1
-        const scaleXZ = 1.0 - (bounce * 0.05); // Inverse of Y
-
-        this.mesh.scale.set(scaleXZ, scaleY, scaleXZ);
+    // Polymorphic save methods
+    isSaveable() {
+        // Only save alive slimes
+        return this.currentState instanceof AliveState;
     }
 
-    takeDamage() {
-        if (this.isDead) return;
-        this.isDead = true;
+    toSaveData() {
+        return {
+            type: 'slime',
+            x: this.position.x,
+            z: this.position.z
+        };
+    }
+
+    static fromSaveData(data) {
+        return new Slime(data.x, data.z);
     }
 }

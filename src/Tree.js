@@ -17,21 +17,29 @@ export class Tree extends Entity {
         const obstacleHeight = this.mesh.position.y + 10.0;
         const playerRadius = 0.4;
 
+        // Early return for height check (acceptable for optimization)
         if (player.position.y > obstacleHeight) return;
 
         const dx = player.position.x - this.mesh.position.x;
         const dz = player.position.z - this.mesh.position.z;
-        const distance = Math.sqrt(dx * dx + dz * dz);
+        const distSq = dx * dx + dz * dz;
+        const distance = Math.sqrt(distSq);
         const minDistance = playerRadius + obstacleRadius;
 
-        if (distance < minDistance) {
-            const angle = Math.atan2(dz, dx);
-            const pushX = Math.cos(angle) * minDistance;
-            const pushZ = Math.sin(angle) * minDistance;
+        // Calculate overlap (positive if colliding, negative/zero if not)
+        const overlap = minDistance - distance;
 
-            player.position.x = this.mesh.position.x + pushX;
-            player.position.z = this.mesh.position.z + pushZ;
-        }
+        // Use Math.max to only apply push when overlap is positive
+        const pushAmount = Math.max(0, overlap);
+
+        // Normalize direction (handle zero distance with epsilon)
+        const safeDistance = Math.max(distance, 0.001);
+        const nx = dx / safeDistance;
+        const nz = dz / safeDistance;
+
+        // Apply push (will be zero if no collision)
+        player.position.x += nx * pushAmount;
+        player.position.z += nz * pushAmount;
     }
 
     createTree(x, z) {
@@ -57,5 +65,10 @@ export class Tree extends Entity {
         group.add(leaves);
 
         return group;
+    }
+
+    // Trees are not saved (they are part of world generation)
+    isSaveable() {
+        return false;
     }
 }

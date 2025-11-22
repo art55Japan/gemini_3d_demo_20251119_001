@@ -1,10 +1,17 @@
 import * as THREE from 'three';
+import { Entity } from './Entity.js';
 
-export class Rock {
+export class Rock extends Entity {
     constructor(x, z, scale = 1) {
+        super();
+        this.type = 'Rock';
         this.scale = scale;
         this.mesh = new THREE.Group();
         this.mesh.position.set(x, 0, z);
+        this.position = new THREE.Vector3(x, 0, z);
+
+        // Store reference
+        this.mesh.userData.entity = this;
 
         // Texture
         const rockTex = this.createFeltTexture('#808080'); // Grey
@@ -63,5 +70,10 @@ export class Rock {
         texture.wrapS = THREE.RepeatWrapping;
         texture.wrapT = THREE.RepeatWrapping;
         return texture;
+    }
+
+    // Rocks are not saved (they are part of world generation)
+    isSaveable() {
+        return false;
     }
 }

@@ -13,45 +13,7 @@ export class Block extends Entity {
         this.mesh.userData.entity = this;
     }
 
-    handleCollision(player, physics) {
-        const playerRadius = 0.4;
-        const blockPos = this.mesh.position;
-        const halfSize = 0.5;
-        const topY = blockPos.y + 0.5;
-
-        if (player.position.y >= topY - 0.1) return;
-
-        const closestX = Math.max(blockPos.x - halfSize, Math.min(player.position.x, blockPos.x + halfSize));
-        const closestZ = Math.max(blockPos.z - halfSize, Math.min(player.position.z, blockPos.z + halfSize));
-
-        const dx = player.position.x - closestX;
-        const dz = player.position.z - closestZ;
-        const distanceSq = dx * dx + dz * dz;
-
-        if (distanceSq < playerRadius * playerRadius && distanceSq > 0) {
-            const distance = Math.sqrt(distanceSq);
-            const overlap = playerRadius - distance;
-
-            const nx = dx / distance;
-            const nz = dz / distance;
-
-            player.position.x += nx * overlap;
-            player.position.z += nz * overlap;
-        } else if (distanceSq === 0) {
-            // Handle exact overlap (rare but possible)
-            const distToMinX = Math.abs(player.position.x - (blockPos.x - halfSize));
-            const distToMaxX = Math.abs(player.position.x - (blockPos.x + halfSize));
-            const distToMinZ = Math.abs(player.position.z - (blockPos.z - halfSize));
-            const distToMaxZ = Math.abs(player.position.z - (blockPos.z + halfSize));
-
-            const min = Math.min(distToMinX, distToMaxX, distToMinZ, distToMaxZ);
-
-            if (min === distToMinX) player.position.x -= (playerRadius + 0.01);
-            else if (min === distToMaxX) player.position.x += (playerRadius + 0.01);
-            else if (min === distToMinZ) player.position.z -= (playerRadius + 0.01);
-            else player.position.z += (playerRadius + 0.01);
-        }
-    }
+    // handleCollision removed to rely on PlayerPhysics AABB collision via collidables array
 
     createFeltTexture(colorHex) {
         const canvas = document.createElement('canvas');
@@ -89,12 +51,16 @@ export class Block extends Entity {
 
     createMesh(x, y, z, type) {
         const geometry = new THREE.BoxGeometry(1, 1, 1);
-        let colorHex = '#8B4513'; // Default dirt
 
-        if (type === 'stone') colorHex = '#808080';
-        if (type === 'stone_dark') colorHex = '#555555';
-        if (type === 'wood') colorHex = '#A0522D';
-        if (type === 'leaves') colorHex = '#228B22';
+        // Map type to color using object lookup instead of if-statements
+        const colorMap = {
+            'stone': '#808080',
+            'stone_dark': '#555555',
+            'wood': '#A0522D',
+            'leaves': '#228B22'
+        };
+
+        const colorHex = colorMap[type] || '#8B4513'; // Default dirt
 
         const texture = this.createFeltTexture(colorHex);
         const material = new THREE.MeshStandardMaterial({
@@ -110,5 +76,24 @@ export class Block extends Entity {
         mesh.receiveShadow = true;
 
         return mesh;
+    }
+
+    // Polymorphic save methods
+    isSaveable() {
+        return true;
+    }
+
+    toSaveData() {
+        return {
+            type: 'block',
+            x: this.mesh.position.x,
+            y: this.mesh.position.y,
+            z: this.mesh.position.z,
+            blockType: this.blockType
+        };
+    }
+
+    static fromSaveData(data) {
+        return new Block(data.x, data.y, data.z, data.blockType);
     }
 }

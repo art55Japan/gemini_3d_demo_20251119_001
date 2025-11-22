@@ -156,7 +156,15 @@ export class BuildSystem {
         block.shouldRemove = true; // EntityManager will handle cleanup
 
         // Remove from collidables
-        const index = this.collidables.indexOf(block.mesh);
-        if (index > -1) this.collidables.splice(index, 1);
+        let index = this.collidables.indexOf(block.mesh);
+
+        // Fallback: Check by UUID if reference not found
+        if (index === -1) {
+            index = this.collidables.findIndex(obj => obj.uuid === block.mesh.uuid);
+        }
+
+        if (index > -1) {
+            this.collidables.splice(index, 1);
+        }
     }
 }

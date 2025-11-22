@@ -30,4 +30,20 @@ export class Entity {
     isAlive() {
         return !this.shouldRemove;
     }
+
+    // Polymorphic save/load methods
+    isSaveable() {
+        // Override in subclass to indicate if this entity should be saved
+        return false;
+    }
+
+    toSaveData() {
+        // Override in subclass to return save data object
+        return null;
+    }
+
+    static fromSaveData(data) {
+        // Override in subclass to create entity from save data
+        return null;
+    }
 }
