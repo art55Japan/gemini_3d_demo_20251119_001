@@ -1,0 +1,77 @@
+# Architecture Diagram
+
+ゲーム全体の構成をMermaidで図示します（主要コンポーネント間の依存・データ流れ）。
+
+```mermaid
+graph LR
+  subgraph Core
+    Game[Game<br/>loop/render]
+    Input[Input<br/>keyboard/mouse/VR]
+    EntityMgr[EntityManager<br/>entities[]]
+    Collidables[collidables Array]
+    CameraMgr[CameraManager]
+    BuildSys[BuildSystem<br/>raycast build]
+    SaveMgr[SaveManager<br/>localStorage]
+    SaveUI[SaveLoadUI<br/>DOM overlay]
+    AudioMgr[AudioManager]
+  end
+
+  subgraph World
+    Player[Player]
+    Phys[PlayerPhysics]
+    Combat[PlayerCombat]
+    Collision[PlayerCollision]
+    Block[Blocks]
+    Tree[Trees]
+    Rock[Rocks]
+    Slime[Slimes]
+  end
+
+  subgraph Render
+    Scene[THREE.Scene]
+    Camera[PerspectiveCamera]
+    Renderer[WebGLRenderer\nXR enabled]
+    VRBtn[VRButton]
+  end
+
+  Game --> Input
+  Game --> EntityMgr
+  Game --> CameraMgr
+  Game --> BuildSys
+  Game --> SaveMgr
+  Game --> SaveUI
+  Game --> AudioMgr
+  Game --> Renderer
+  Game --> Scene
+  Game --> Collidables
+
+  EntityMgr --> Player
+  Player --> Phys
+  Player --> Combat
+  Player --> Collision
+  EntityMgr --> Block
+  EntityMgr --> Tree
+  EntityMgr --> Rock
+  EntityMgr --> Slime
+
+  BuildSys --> Player
+  BuildSys --> Block
+  BuildSys --> Collidables
+  Collision --> Slime
+  Combat --> Slime
+
+  SaveMgr --> Player
+  SaveMgr --> Block
+  SaveMgr --> Slime
+
+  CameraMgr --> Camera
+  Renderer --> Scene
+  VRBtn --> Renderer
+  Collidables -.used by.- Phys
+  Input --> BuildSys
+  Input --> Player
+```
+
+- Coreがゲームループと状態管理、Worldがエンティティ群、RenderがThree.js/VR周りを担当します。
+- `collidables` は物理専用の共有リストで、BlocksとRocksが初期登録されます。
+- Save/Loadはプレイヤー状態とBlock/Slimeの永続化に限られています。
