@@ -9,6 +9,7 @@ import { WorldManager } from './WorldManager.js';
 import { BuildSystem } from './BuildSystem.js';
 import { SaveManager } from './SaveManager.js';
 import { SaveLoadUI } from './SaveLoadUI.js';
+import { Block } from './Block.js';
 
 export class Game {
     constructor() {
@@ -91,6 +92,9 @@ export class Game {
         this.worldManager = new WorldManager(this.entityManager, this.collidables);
         this.worldManager.populate();
 
+        // Create initial castle
+        this.createInitialCastle();
+
         // Build System
         this.buildSystem = new BuildSystem(this.scene, this.camera, this.entityManager, this.collidables);
         this.buildSystem.setPlayer(this.player);
@@ -112,6 +116,33 @@ export class Game {
         this.lastMenuTime = 0;
 
         this.createNotificationUI();
+    }
+
+    createInitialCastle() {
+        console.log("Creating initial castle...");
+
+        const castleX = -10;
+        const castleZ = -10;
+        const castleSize = 8;
+        const castleHeight = 6;
+
+        for (let y = 1; y <= castleHeight; y++) {
+            for (let x = 0; x < castleSize; x++) {
+                for (let z = 0; z < castleSize; z++) {
+                    const isWall = (x === 0 || x === castleSize - 1 || z === 0 || z === castleSize - 1);
+
+                    if (isWall) {
+                        if (y > 2 && (x + z) % 3 === 0) continue;
+
+                        const block = new Block(castleX + x, y, castleZ + z, 'stone_dark');
+                        this.entityManager.add(block);
+                        this.collidables.push(block.mesh);
+                    }
+                }
+            }
+        }
+
+        console.log("Castle created!");
     }
 
     createNotificationUI() {
