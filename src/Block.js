@@ -1,33 +1,56 @@
 import * as THREE from 'three';
+import { Entity } from './Entity.js';
 
-export class Block {
-    constructor(x, y, z, type = 'dirt') {
-        this.type = type;
-        this.mesh = this.buildBlock();
-        this.mesh.position.set(x, y, z);
+export class Block extends Entity {
+    constructor(x, y, z, type) {
+        super();
+        this.type = 'Block';
+        this.blockType = type;
+        this.mesh = this.createMesh(x, y, z, type);
+        this.position = new THREE.Vector3(x, y, z); // Use setter for sync
 
-        // Tag for collision detection
+        // Store reference for raycasting
         this.mesh.userData.entity = this;
     }
 
-    buildBlock() {
-        // 1x1x1 Cube
-        const geometry = new THREE.BoxGeometry(1, 1, 1);
+    handleCollision(player, physics) {
+        const playerRadius = 0.4;
+        const blockPos = this.mesh.position;
+        const halfSize = 0.5;
+        const topY = blockPos.y + 0.5;
 
-        let color = 0x8B4513; // SaddleBrown (Dirt)
-        if (this.type === 'stone') color = 0x808080;
-        if (this.type === 'wood') color = 0xA0522D;
+        if (player.position.y >= topY - 0.1) return;
 
-        const material = new THREE.MeshStandardMaterial({
-            map: this.createFeltTexture(color),
-            roughness: 0.9,
-            metalness: 0.1
-        });
+        const closestX = Math.max(blockPos.x - halfSize, Math.min(player.position.x, blockPos.x + halfSize));
+        const closestZ = Math.max(blockPos.z - halfSize, Math.min(player.position.z, blockPos.z + halfSize));
 
-        const mesh = new THREE.Mesh(geometry, material);
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-        return mesh;
+        const dx = player.position.x - closestX;
+        const dz = player.position.z - closestZ;
+        const distanceSq = dx * dx + dz * dz;
+
+        if (distanceSq < playerRadius * playerRadius && distanceSq > 0) {
+            const distance = Math.sqrt(distanceSq);
+            const overlap = playerRadius - distance;
+
+            const nx = dx / distance;
+            const nz = dz / distance;
+
+            player.position.x += nx * overlap;
+            player.position.z += nz * overlap;
+        } else if (distanceSq === 0) {
+            // Handle exact overlap (rare but possible)
+            const distToMinX = Math.abs(player.position.x - (blockPos.x - halfSize));
+            const distToMaxX = Math.abs(player.position.x - (blockPos.x + halfSize));
+            const distToMinZ = Math.abs(player.position.z - (blockPos.z - halfSize));
+            const distToMaxZ = Math.abs(player.position.z - (blockPos.z + halfSize));
+
+            const min = Math.min(distToMinX, distToMaxX, distToMinZ, distToMaxZ);
+
+            if (min === distToMinX) player.position.x -= (playerRadius + 0.01);
+            else if (min === distToMaxX) player.position.x += (playerRadius + 0.01);
+            else if (min === distToMinZ) player.position.z -= (playerRadius + 0.01);
+            else player.position.z += (playerRadius + 0.01);
+        }
     }
 
     createFeltTexture(colorHex) {
@@ -64,7 +87,28 @@ export class Block {
         return texture;
     }
 
-    update(delta) {
-        // Static block, no update logic needed yet
+    createMesh(x, y, z, type) {
+        const geometry = new THREE.BoxGeometry(1, 1, 1);
+        let colorHex = '#8B4513'; // Default dirt
+
+        if (type === 'stone') colorHex = '#808080';
+        if (type === 'stone_dark') colorHex = '#555555';
+        if (type === 'wood') colorHex = '#A0522D';
+        if (type === 'leaves') colorHex = '#228B22';
+
+        const texture = this.createFeltTexture(colorHex);
+        const material = new THREE.MeshStandardMaterial({
+            map: texture,
+            bumpMap: texture,
+            bumpScale: 0.05,
+            roughness: 0.9
+        });
+
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.position.set(x, y, z);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+
+        return mesh;
     }
 }

@@ -1,16 +1,53 @@
 import * as THREE from 'three';
+import { Entity } from './Entity.js';
 
-export class Slime {
+export class Slime extends Entity {
     constructor(x, z) {
+        super();
+        this.type = 'Slime';
         this.position = new THREE.Vector3(x, 0.5, z);
         this.originalY = 0.5;
         this.mesh = this.buildSlime();
         this.mesh.position.copy(this.position);
 
+        // Store reference
+        this.mesh.userData.entity = this;
+
         // Animation properties
         this.timeOffset = Math.random() * 100;
         this.bounceSpeed = 3.0;
         this.bounceHeight = 0.3;
+
+        this.isDead = false;
+    }
+
+    handleCollision(player, physics) {
+        if (this.isDead) return;
+
+        const collisionRange = 0.8;
+        // Use mesh position for accurate animation-based collision
+        const slimePos = this.mesh.position;
+        const dist = player.position.distanceTo(slimePos);
+
+        if (dist < collisionRange) {
+            console.log(`[HIT] Slime collision! Distance: ${dist.toFixed(2)}`);
+
+            const knockbackDir = player.position.clone().sub(slimePos).normalize();
+            physics.applyKnockback(knockbackDir, 15.0);
+
+            if (player.audioManager) player.audioManager.playHit();
+        }
+    }
+
+    update(delta, input, time) {
+        if (this.isDead) return;
+
+        // Simple Bounce Animation
+        const bounce = Math.sin((time + this.timeOffset) * this.bounceSpeed) * this.bounceHeight;
+        this.mesh.position.y = this.originalY + Math.abs(bounce);
+
+        // Sync logical position (optional, but good for consistency)
+        this._position.copy(this.mesh.position);
     }
 
     createFeltTexture(colorHex) {

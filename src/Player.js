@@ -66,10 +66,7 @@ export class Player {
         // Combat Update
         this.combat.update(delta, input, entities);
 
-        // Enemy Collision
-        this.collision.checkEnemies(entities, this.physics);
-
-        // Environment Collision
-        // this.collision.checkEnvironment(entities);
+        // Unified Collision Handling (Polymorphic)
+        this.collision.checkCollisions(entities, this.physics);
     }
 }

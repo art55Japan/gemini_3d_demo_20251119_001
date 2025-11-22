@@ -138,16 +138,25 @@ export class BuildSystem {
     handleBlockRemoval(input, hit) {
         // Remove Block
         if (input.removeBlock && this.buildCooldown <= 0) {
-            if (hit.object.userData.entity instanceof Block) {
-                const blockToRemove = hit.object.userData.entity;
-                blockToRemove.shouldRemove = true; // EntityManager will handle cleanup
+            const target = hit.object.userData.entity;
 
-                // Remove from collidables
-                const index = this.collidables.indexOf(blockToRemove.mesh);
-                if (index > -1) this.collidables.splice(index, 1);
-
+            if (this.isRemovable(target)) {
+                this.removeBlock(target);
                 this.buildCooldown = 0.2;
             }
         }
+    }
+
+    isRemovable(entity) {
+        // Check if entity exists and is a Block (or has removable property)
+        return entity && entity.type === 'Block';
+    }
+
+    removeBlock(block) {
+        block.shouldRemove = true; // EntityManager will handle cleanup
+
+        // Remove from collidables
+        const index = this.collidables.indexOf(block.mesh);
+        if (index > -1) this.collidables.splice(index, 1);
     }
 }
