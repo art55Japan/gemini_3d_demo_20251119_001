@@ -1,0 +1,31 @@
+# Sequences
+
+## ゲームループ
+1. `Input.getState()` でキー/マウス/VR入力を正規化。
+2. `BuildSystem.update` でビルドモード処理（Raycast→ゴースト表示→設置/削除）。
+3. `EntityManager.update` が全エンティティの `update` を実行し、`shouldRemove` を持つものを除去。
+4. `CameraManager.update` で追従/視点調整。
+5. `renderer.render` で描画。
+
+## セーブ/ロード
+- クイックセーブ/ロード: `K` / `L` で `SaveManager.quickSave/quickLoad` → Player位置/回転＋ `isSaveable` エンティティ(Block/Slime)をJSON化し`localStorage` に保存/復元。
+- スロット保存: `SaveLoadUI` から `save(slotId)` / `load(slotId)` / `delete(slotId)` を呼ぶ。ロード時は既存の保存対象エンティティだけ除去→再生成→衝突リストへ再登録。
+
+## 攻撃と当たり判定
+1. 入力`attack`で `PlayerCombat` がIdle→Attackingへ遷移。
+2. 攻撃中、三角波で剣の回転を制御（0.4s）。
+3. 0.2〜0.6の時間窓で `checkAttackCollision` を実行し、前方2m以内の `takeDamage` 実装エンティティ（Slime等）にダメージ。
+4. 終了後Idleへ戻す。
+
+## プレイヤー物理
+1. 入力方向をプレイヤー向きに投影し、移動速度を算出。
+2. ノックバック速度を合算し減衰。
+3. 重力を加算。
+4. X→Z→Yの順で移動・衝突解決（AABB）。Yでは着地/頭ぶつかりを処理。床0でクランプ。
+5. `onGround && jump` でジャンプ速度をセットし、`onGround` を更新。
+
+## ビルド操作
+1. ビルドモードON (`B`) でゴーストブロック表示。
+2. Raycastで地面/オブジェクトと交差点を取得、法線方向に0.5だけ押し出しグリッド化。
+3. 左クリックで `Block` を設置し、`EntityManager` と `collidables` に登録。
+4. 右クリックでヒット対象がBlockなら `shouldRemove` を立て、`collidables` から除去。
