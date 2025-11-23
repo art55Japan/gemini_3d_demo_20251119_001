@@ -27,12 +27,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "設計書_Codexよるリバース/Architecture/アーキテクチャ図.md",
+                "file": "設計書_ClaudeCodeによるリバース/08_3Dグラフィックス設計.md",
                 "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "アーキテクチャ図"
+              "title": "08_3Dグラフィックス設計"
             }
           }
         ],
@@ -93,7 +93,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 200
+    "width": 450.5
   },
   "right": {
     "id": "202ede4a631a7847",
@@ -109,7 +109,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "設計書_Codexよるリバース/Architecture/アーキテクチャ図.md",
+                "file": "設計書_ClaudeCodeによるリバース/08_3Dグラフィックス設計.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -119,7 +119,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "アーキテクチャ図へのバックリンク"
+              "title": "08_3Dグラフィックス設計へのバックリンク"
             }
           },
           {
@@ -128,12 +128,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "設計書_Codexよるリバース/Architecture/アーキテクチャ図.md",
+                "file": "設計書_ClaudeCodeによるリバース/08_3Dグラフィックス設計.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "アーキテクチャ図からのアウトゴーイングリンク"
+              "title": "08_3Dグラフィックス設計からのアウトゴーイングリンク"
             }
           },
           {
@@ -171,13 +171,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "設計書_Codexよるリバース/Architecture/アーキテクチャ図.md",
+                "file": "設計書_ClaudeCodeによるリバース/08_3Dグラフィックス設計.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "アーキテクチャ図のアウトライン"
+              "title": "08_3Dグラフィックス設計のアウトライン"
             }
           }
         ]
@@ -198,10 +198,36 @@
       "bases:Create new base": false
     }
   },
-  "active": "9cdd2a999f41356d",
+  "active": "d80697550ee126de",
   "lastOpenFiles": [
-    "設計書_ClaudeCodeによるリバース",
-    "設計書_Codexよるリバース",
+    "設計書_Gemini3によるリバース",
+    "設計書_ClaudeCodeによるリバース/07_セーブシステム設計.md",
+    "設計書_ClaudeCodeによるリバース/06_ゲームループ・入力設計.md",
+    "設計書_ClaudeCodeによるリバース/05_プレイヤーシステム設計.md",
+    "設計書_ClaudeCodeによるリバース/04_エンティティシステム設計.md",
+    "設計書_ClaudeCodeによるリバース/03_クラス設計.md",
+    "設計書_ClaudeCodeによるリバース/ドキュメント作成計画/ドキュメント作成計画.md",
+    "設計書_ClaudeCodeによるリバース/10_データ定義書.md",
+    "設計書_ClaudeCodeによるリバース/09_UI設計.md",
+    "設計書_ClaudeCodeによるリバース/08_3Dグラフィックス設計.md",
+    "設計書_ClaudeCodeによるリバース/_MOC_設計書.md.tmp.42064.1763910677846",
+    "設計書_ClaudeCodeによるリバース/02_アーキテクチャ設計.md",
+    "設計書_ClaudeCodeによるリバース/_MOC_設計書.md.tmp.42064.1763910669873",
+    "設計書_ClaudeCodeによるリバース/01_プロジェクト概要.md",
+    "設計書_ClaudeCodeによるリバース/10_データ定義書.md.tmp.42064.1763910634569",
+    "設計書_ClaudeCodeによるリバース/08_3Dグラフィックス設計.md.tmp.42064.1763910470430",
+    "設計書_ClaudeCodeによるリバース/07_セーブシステム設計.md.tmp.42064.1763910359979",
+    "設計書_ClaudeCodeによるリバース/06_ゲームループ・入力設計.md.tmp.42064.1763910276993",
+    "設計書_ClaudeCodeによるリバース/04_エンティティシステム設計.md.tmp.42064.1763910103063",
+    "設計書_ClaudeCodeによるリバース/03_クラス設計.md.tmp.42064.1763910032470",
+    "設計書_ClaudeCodeによるリバース/_MOC_設計書.md",
+    "入門レベル/00_はじめに/04_アーキテクチャ概要.md",
+    "設計書_ClaudeCodeによるリバース/ドキュメント作成計画",
+    "設計書_ClaudeCodeによるリバース/新しいフォルダー",
+    "入門レベル/00_はじめに/01_学習の進め方.md",
+    "入門レベル/00_はじめに/02_開発環境セットアップ.md",
+    "入門レベル/00_はじめに/00_このドキュメントについて.md",
+    "設計書_Codexよるリバース/Architecture/アーキテクチャ図.md",
     "設計書_Codexよるリバース/Process/ビルドとテスト.md",
     "設計書_Codexよるリバース/Process/トラブルシュート.md",
     "設計書_Codexよるリバース/Process/デプロイ.md",
@@ -209,32 +235,6 @@
     "設計書_Codexよるリバース/Gameplay/エンティティ.md",
     "設計書_Codexよるリバース/Architecture/状態遷移図.md",
     "設計書_Codexよるリバース/Architecture/処理シーケンス.md",
-    "設計書_Codexよるリバース/Architecture/概要.md",
-    "設計書_Codexよるリバース/Architecture/ライフサイクル.md",
-    "設計書_Codexよるリバース/Architecture/データモデル.md",
-    "設計書_Codexよるリバース/Architecture/システム一覧.md",
-    "設計書_Codexよるリバース/Architecture/シーケンス図.md",
-    "設計書_Codexよるリバース/Architecture/クラス図.md",
-    "設計書_Codexよるリバース/Architecture/オブジェクト図.md",
-    "設計書_Codexよるリバース/Architecture/アーキテクチャ図.md",
-    "入門レベル/05_ゲームメカニクス編/01_物理演算_PlayerPhysics.js.md",
-    "入門レベル/05_ゲームメカニクス編/_MOC_ゲームメカニクス編.md",
-    "入門レベル/04_3Dグラフィックス編/01_キャラクター構築_PlayerMesh.js.md",
-    "入門レベル/03_設計パターン編/02_エンティティ管理_EntityManager.js.md",
-    "入門レベル/03_設計パターン編/01_エンティティの基礎_Entity.js.md",
-    "入門レベル/03_設計パターン編/03_プレイヤーの設計_Player.js.md",
-    "入門レベル/03_設計パターン編/02_エンティティ管理_EntityManager.js.md.tmp.42064.1763905571866",
-    "入門レベル/02_Three.js入門編/02_入力システム_Input.js.md",
-    "入門レベル/02_Three.js入門編/01_ゲームの心臓部_Game.js.md",
-    "入門レベル/02_Three.js入門編/_MOC_Three.js入門編.md",
-    "入門レベル/01_基礎編/03_エントリーポイント_main.js.md",
-    "入門レベル/00_はじめに/_MOC_はじめに.md.tmp.42064.1763904569241",
-    "入門レベル/00_はじめに/03_プロジェクト概要.md.tmp.42064.1763904432547",
-    "入門レベル/00_はじめに/03_プロジェクト概要.md.tmp.42064.1763904169363",
-    "入門レベル/00_はじめに/_MOC_はじめに.md.tmp.42064.1763904138452",
-    "入門レベル/00_はじめに/04_アーキテクチャ概要.md.tmp.42064.1763904052967",
-    "入門レベル/07_付録/01_JavaScript基礎リファレンス.md.tmp.42064.1763896920616",
-    "入門レベル/Plans/タスク管理.md.tmp.42064.1763895680179",
-    "入門レベル/Plans/タスク管理.md.tmp.42064.1763894213756"
+    "設計書_Codexよるリバース/Architecture/概要.md"
   ]
 }
