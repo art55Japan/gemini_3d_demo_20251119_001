@@ -10,7 +10,9 @@ export class Player {
         this.audioManager = audioManager;
         this.position = new THREE.Vector3(0, 0, 0);
 
-        this.mesh = this.buildCharacter();
+        // Create PlayerMesh instance and its group
+        this.playerMesh = new PlayerMesh();
+        this.mesh = this.playerMesh.create();
         this.mesh.position.copy(this.position);
         this.mesh.rotation.y = 0; // Face Forward (-Z) by default
         this.scene.add(this.mesh);
@@ -41,7 +43,10 @@ export class Player {
 
         // Physics Update (Movement, Gravity, Jump)
         this.physics.update(delta, input, collidables);
-
+        // Update walking animation
+        if (this.playerMesh) {
+            this.playerMesh.update(delta, this.physics.velocity);
+        }
         // Sync Mesh Position
         this.mesh.position.copy(this.position);
 

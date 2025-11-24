@@ -2,158 +2,111 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 export class PlayerMesh {
+    constructor() {
+        this.model = null;
+        this.headMesh = null;
+        this.animationTime = 0;
+        this.initialModelY = 0;
+    }
+
     create() {
         const group = new THREE.Group();
-
         const loader = new GLTFLoader();
-        // Load the correct model identified from logs
         loader.load('/models/new_rabbit_model.glb', (gltf) => {
             const model = gltf.scene;
-
-            // Adjust scale and rotation to match the game world
-            model.rotation.y = Math.PI / 2; // +90 degrees to face away from camera
-
-            // Debug logs & Normalization
+            // Rotate to face away from camera
+            model.rotation.y = Math.PI / 2;
+            // Debug logs & normalization
             const box = new THREE.Box3().setFromObject(model);
             const size = box.getSize(new THREE.Vector3());
             const center = box.getCenter(new THREE.Vector3());
-
             console.log(`Player Model Loaded! Size: ${size.x.toFixed(2)}, ${size.y.toFixed(2)}, ${size.z.toFixed(2)}`);
             console.log(`Model Center: ${center.x.toFixed(2)}, ${center.y.toFixed(2)}, ${center.z.toFixed(2)}`);
-
-            // Target height ~1.5 units
+            // Scale to target height (~1.5 units)
             const targetHeight = 1.5;
             const scaleFactor = targetHeight / size.y;
-
             if (isFinite(scaleFactor) && scaleFactor > 0) {
                 model.scale.set(scaleFactor, scaleFactor, scaleFactor);
                 console.log(`Applied Scale Factor: ${scaleFactor.toFixed(4)}`);
-
-                // Re-center if needed (e.g. if origin is at center of body, move it up so feet are at 0)
-                // We want the bottom of the box to be at 0
+                // Re‑center so feet are at Y = 0
                 const newBox = new THREE.Box3().setFromObject(model);
                 const newMin = newBox.min;
                 model.position.y -= newMin.y;
                 console.log(`Adjusted Y Position by: ${-newMin.y.toFixed(4)}`);
+                // Store initial Y for animation
+                this.initialModelY = model.position.y;
             }
-
-            // FINAL Material Configuration
+            // Materials
             const materials = {
-                felt: new THREE.MeshStandardMaterial({
-                    color: 0xFFFFFF, // Pure White
-                    roughness: 1.0,  // Matte
-                    metalness: 0.0,
-                    emissive: 0x333333, // Self-illumination
-                }),
-                armor: new THREE.MeshStandardMaterial({
-                    color: 0xFAFAFA, // Slightly whiter silver (near white)
-                    roughness: 0.1,
-                    metalness: 0.9,
-                }),
-                eye: new THREE.MeshStandardMaterial({
-                    color: 0x000000, // Black eye
-                    roughness: 0.5,
-                    metalness: 0.0,
-                    emissive: 0x111111, // slight dim glow
-                }),
-                cape: new THREE.MeshStandardMaterial({
-                    color: 0x0000FF, // Blue
-                    roughness: 0.8,
-                    metalness: 0.1,
-                }),
+                felt: new THREE.MeshStandardMaterial({ color: 0xFFFFFF, roughness: 1.0, metalness: 0.0, emissive: 0x333333 }),
+                armor: new THREE.MeshStandardMaterial({ color: 0xFAFAFA, roughness: 0.1, metalness: 0.9 }),
+                eye: new THREE.MeshStandardMaterial({ color: 0x000000, roughness: 0.5, metalness: 0.0, emissive: 0x111111 }),
+                cape: new THREE.MeshStandardMaterial({ color: 0x0000FF, roughness: 0.8, metalness: 0.1 })
             };
-
-            // Apply materials to parts
+            // Apply materials and locate head mesh (part 8)
             let colorIndex = 0;
-            let headMesh = null; // reference to head (Part 8)
-
+            let headMesh = null;
             model.traverse((child) => {
                 if (child.isMesh) {
                     child.castShadow = true;
                     child.receiveShadow = true;
-
                     if (child.material) {
                         let mat;
                         let partType;
-
-                        // Store head mesh reference (Part 8)
-                        if (colorIndex === 8) {
-                            headMesh = child;
-                        }
-
-                        // Part 8, 12 = Felt (White)
-                        if (colorIndex === 8 || colorIndex === 12) {
-                            mat = materials.felt;
-                            partType = 'FELT';
-                        }
-                        // Part 9 ONLY = Cape (Blue)
-                        else if (colorIndex === 9) {
-                            mat = materials.cape;
-                            partType = 'CAPE';
-                        }
-                        // All others = Armor (Silver)
-                        else {
-                            mat = materials.armor;
-                            partType = 'ARMOR';
-                        }
-
+                        if (colorIndex === 8) headMesh = child;
+                        if (colorIndex === 8 || colorIndex === 12) { mat = materials.felt; partType = 'FELT'; }
+                        else if (colorIndex === 9) { mat = materials.cape; partType = 'CAPE'; }
+                        else { mat = materials.armor; partType = 'ARMOR'; }
                         child.material = mat.clone();
                         console.log(`Part ${colorIndex} ("${child.name}") = ${partType}`);
                         colorIndex++;
                     }
                 }
             });
-
-            // Add two eye placeholder spheres attached to head mesh
+            // Eyes with highlights
             if (headMesh) {
-                // Left eye
-                const eyeSphereLeft = new THREE.Mesh(
-                    new THREE.SphereGeometry(0.03, 16, 16),
-                    materials.eye
-                );
-                // Position for left eye (original position)
+                const eyeSphereLeft = new THREE.Mesh(new THREE.SphereGeometry(0.03, 16, 16), materials.eye);
                 eyeSphereLeft.position.set(0.1, 0.14, 0.1);
                 headMesh.add(eyeSphereLeft);
-
-                // Left eye highlight
-                const highlightLeft = new THREE.Mesh(
-                    new THREE.SphereGeometry(0.01, 8, 8),
-                    new THREE.MeshBasicMaterial({
-                        color: 0xFFFFFF,
-                        transparent: true,
-                        opacity: 0.9
-                    })
-                );
+                const highlightLeft = new THREE.Mesh(new THREE.SphereGeometry(0.01, 8, 8), new THREE.MeshBasicMaterial({ color: 0xFFFFFF, transparent: true, opacity: 0.9 }));
                 highlightLeft.position.set(0.01, 0.01, 0.015);
                 eyeSphereLeft.add(highlightLeft);
-
-                // Right eye
-                const eyeSphereRight = new THREE.Mesh(
-                    new THREE.SphereGeometry(0.03, 16, 16),
-                    materials.eye
-                );
-                // Position for right eye (Z axis controls left-right positioning)
+                const eyeSphereRight = new THREE.Mesh(new THREE.SphereGeometry(0.03, 16, 16), materials.eye);
                 eyeSphereRight.position.set(0.1, 0.14, -0.05);
                 headMesh.add(eyeSphereRight);
-
-                // Right eye highlight
-                const highlightRight = new THREE.Mesh(
-                    new THREE.SphereGeometry(0.01, 8, 8),
-                    new THREE.MeshBasicMaterial({
-                        color: 0xFFFFFF,
-                        transparent: true,
-                        opacity: 0.9
-                    })
-                );
+                const highlightRight = new THREE.Mesh(new THREE.SphereGeometry(0.01, 8, 8), new THREE.MeshBasicMaterial({ color: 0xFFFFFF, transparent: true, opacity: 0.9 }));
                 highlightRight.position.set(0.01, 0.01, 0.015);
                 eyeSphereRight.add(highlightRight);
             }
-
+            // Store references for animation
+            this.model = model;
+            this.headMesh = headMesh;
             group.add(model);
         }, undefined, (error) => {
             console.error('An error happened loading the player model:', error);
         });
-
         return group;
+    }
+
+    // Walking animation
+    update(delta, velocity) {
+        if (!this.model) return;
+        const speed = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
+        if (speed > 0.05) { // lower threshold for visibility
+            this.animationTime += delta * 8;
+            const bobAmount = 0.2; // stronger bobbing
+            const bobOffset = Math.abs(Math.sin(this.animationTime)) * bobAmount;
+            this.model.position.y = (this.initialModelY || 0) + bobOffset;
+            const tiltAmount = 0.1;
+            const tiltOffset = Math.sin(this.animationTime * 2) * tiltAmount;
+            this.model.rotation.z = tiltOffset;
+        } else {
+            const targetY = this.initialModelY || 0;
+            const lerpFactor = 0.1;
+            this.model.position.y += (targetY - this.model.position.y) * lerpFactor;
+            this.model.rotation.z += (0 - this.model.rotation.z) * lerpFactor;
+            if (Math.abs(this.model.position.y - targetY) < 0.001) this.model.position.y = targetY;
+            if (Math.abs(this.model.rotation.z) < 0.001) this.model.rotation.z = 0;
+        }
     }
 }
