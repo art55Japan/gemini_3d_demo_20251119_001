@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { CameraManager } from '../CameraManager.js';
 import * as THREE from 'three';
+import { CameraParameters } from '../config/CameraParameters.js';
 
 describe('CameraManager', () => {
     let cameraManager;
@@ -25,7 +26,8 @@ describe('CameraManager', () => {
             }
         };
 
-        cameraManager = new CameraManager(camera, player, renderer);
+        const cameraParams = new CameraParameters();
+        cameraManager = new CameraManager(camera, player, renderer, cameraParams);
     });
 
     it('should initialize with default TPS view', () => {

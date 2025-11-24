@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Player } from '../Player.js';
 import * as THREE from 'three';
+import { AnimationParameters } from '../config/AnimationParameters.js';
+import { PlayerParameters } from '../config/PlayerParameters.js';
 
 // Mock GLTFLoader
 vi.mock('three/examples/jsm/loaders/GLTFLoader.js', () => ({
@@ -27,7 +29,9 @@ describe('Player', () => {
             playJump: vi.fn(),
             playAttack: vi.fn()
         };
-        player = new Player(scene, audioManager);
+        const animationParams = new AnimationParameters();
+        const playerParams = new PlayerParameters();
+        player = new Player(scene, audioManager, animationParams, playerParams);
     });
 
     it('should initialize with position at origin', () => {
