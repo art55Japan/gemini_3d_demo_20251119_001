@@ -2,6 +2,17 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Player } from '../Player.js';
 import * as THREE from 'three';
 
+// Mock GLTFLoader
+vi.mock('three/examples/jsm/loaders/GLTFLoader.js', () => ({
+    GLTFLoader: class {
+        load(url, onLoad) {
+            // Simulate successful load with a dummy scene
+            const gltf = { scene: new THREE.Group() };
+            onLoad(gltf);
+        }
+    }
+}));
+
 describe('Player', () => {
     let player;
     let scene;

@@ -1,0 +1,49 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.13 [39m[90mC:/source/gemini_3d_demo_20251119_001[39m
+
+[90mstdout[2m | src/__tests__/BuildSystem.test.js[2m > [22m[2mBuildSystem[2m > [22m[2mtoggles build mode and updates ghost visibility
+[22m[39mBuild Mode: true
+Update hit: {
+  point: Vector3 { x: [33m0[39m, y: [33m0[39m, z: [33m0[39m },
+  face: { normal: Vector3 { x: [33m0[39m, y: [33m1[39m, z: [33m0[39m } },
+  object: { userData: {} }
+}
+Build Mode: false
+
+[90mstdout[2m | src/__tests__/BuildSystem.test.js[2m > [22m[2mBuildSystem[2m > [22m[2mhandles cooldown correctly
+[22m[39mBuild Mode: true
+Update hit: {
+  point: Vector3 { x: [33m0[39m, y: [33m0[39m, z: [33m0[39m },
+  face: { normal: Vector3 { x: [33m0[39m, y: [33m1[39m, z: [33m0[39m } },
+  object: { userData: { type: [32m'ground'[39m } }
+}
+Update hit: {
+  point: Vector3 { x: [33m0[39m, y: [33m0[39m, z: [33m0[39m },
+  face: { normal: Vector3 { x: [33m0[39m, y: [33m1[39m, z: [33m0[39m } },
+  object: { userData: { type: [32m'ground'[39m } }
+}
+
+[90mstdout[2m | src/__tests__/BuildSystem.test.js[2m > [22m[2mBuildSystem[2m > [22m[2mplaces a block when input.placeBlock is true
+[22m[39mUpdate hit: {
+  point: Vector3 { x: [33m0[39m, y: [33m0[39m, z: [33m0[39m },
+  face: { normal: Vector3 { x: [33m0[39m, y: [33m1[39m, z: [33m0[39m } },
+  object: { userData: {} }
+}
+
+[90mstdout[2m | src/__tests__/BuildSystem.test.js[2m > [22m[2mBuildSystem[2m > [22m[2mremoves a block when input.removeBlock is true and block is removable
+[22m[39mUpdate hit: { object: { userData: { entity: [36m[Block][39m } } }
+
+ [31m笶ｯ[39m src/__tests__/BuildSystem.test.js [2m([22m[2m7 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 45[2mms[22m[39m
+     [32m笨・[39m initializes with ghost block hidden[32m 3[2mms[22m[39m
+     [32m笨・[39m sets player correctly[32m 0[2mms[22m[39m
+     [32m笨・[39m toggles build mode and updates ghost visibility[32m 2[2mms[22m[39m
+     [32m笨・[39m handles cooldown correctly[32m 2[2mms[22m[39m
+     [32m笨・[39m returns ground hit when no intersectables[32m 0[2mms[22m[39m
+     [32m笨・[39m places a block when input.placeBlock is true[32m 21[2mms[22m[39m
+[31m     [31mﾃ・[31m removes a block when input.removeBlock is true and block is removable[39m[32m 16[2mms[22m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m6 passed[39m[22m[90m (7)[39m
+[2m   Start at [22m 13:17:29
+[2m   Duration [22m 839ms[2m (transform 43ms, setup 30ms, collect 85ms, tests 45ms, environment 533ms, prepare 11ms)[22m
+

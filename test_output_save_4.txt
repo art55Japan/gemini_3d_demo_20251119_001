@@ -1,0 +1,51 @@
+
+ RUN  v4.0.13 C:/source/gemini_3d_demo_20251119_001
+
+stderr | src/__tests__/SaveManager.test.js > SaveManager > load restores saved blocks and enemies
+Failed to load game: TypeError: this.game.entityManager.add is not a function
+    at C:/source/gemini_3d_demo_20251119_001/src/SaveManager.js:80:45
+    at Array.forEach (<anonymous>)
+    at SaveManager._restoreSaveData (C:/source/gemini_3d_demo_20251119_001/src/SaveManager.js:78:33)
+    at SaveManager.load (C:/source/gemini_3d_demo_20251119_001/src/SaveManager.js:172:18)
+    at C:/source/gemini_3d_demo_20251119_001/src/__tests__/SaveManager.test.js:118:27
+    at file:///C:/source/gemini_3d_demo_20251119_001/node_modules/@vitest/runner/dist/index.js:145:11
+    at file:///C:/source/gemini_3d_demo_20251119_001/node_modules/@vitest/runner/dist/index.js:912:26
+    at file:///C:/source/gemini_3d_demo_20251119_001/node_modules/@vitest/runner/dist/index.js:1237:20
+    at new Promise (<anonymous>)
+    at runWithTimeout (file:///C:/source/gemini_3d_demo_20251119_001/node_modules/@vitest/runner/dist/index.js:1203:10)
+
+ 笶ｯ src/__tests__/SaveManager.test.js (6 tests | 1 failed | 5 skipped) 8ms
+     竊・quickSave stores data in localStorage
+     竊・quickLoad restores player state
+     竊・getSlots returns sorted save slots
+     竊・save creates a slot with player position summary
+     ﾃ・load restores saved blocks and enemies 7ms
+     竊・delete removes a slot
+
+竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ Failed Tests 1 竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ
+
+ FAIL  src/__tests__/SaveManager.test.js > SaveManager > load restores saved blocks and enemies
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ 笶ｯ src/__tests__/SaveManager.test.js:119:24
+    117| 
+    118|         const result = sm.load('slotA');
+    119|         expect(result).toBe(true);
+       |                        ^
+    120|         expect(Block.fromSaveData).toHaveBeenCalledWith(blockData);
+    121|         expect(Slime.fromSaveData).toHaveBeenCalledWith(slimeData);
+
+竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ[1/1]竡ｯ
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 5 skipped (6)
+   Start at  13:49:47
+   Duration  726ms (transform 45ms, setup 27ms, collect 108ms, tests 8ms, environment 461ms, prepare 10ms)
+

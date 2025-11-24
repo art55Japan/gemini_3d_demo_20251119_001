@@ -1,0 +1,50 @@
+
+ RUN  v4.0.13 C:/source/gemini_3d_demo_20251119_001
+
+stdout | src/__tests__/SaveManager.test.js > SaveManager > quickSave stores data in localStorage
+Quick Save Successful!
+
+stdout | src/__tests__/SaveManager.test.js > SaveManager > quickLoad restores player state
+Quick Load Successful!
+
+stdout | src/__tests__/SaveManager.test.js > SaveManager > save creates a slot with player position summary
+Game Saved to Slot testSlot!
+
+stdout | src/__tests__/SaveManager.test.js > SaveManager > load restores saved blocks and enemies
+Game Loaded from Slot slotA!
+
+ 笶ｯ src/__tests__/SaveManager.test.js (6 tests | 1 failed) 20ms
+     笨・quickSave stores data in localStorage 12ms
+     笨・quickLoad restores player state 1ms
+     笨・getSlots returns sorted save slots 0ms
+     笨・save creates a slot with player position summary 0ms
+     ﾃ・load restores saved blocks and enemies 5ms
+     笨・delete removes a slot 0ms
+
+竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ Failed Tests 1 竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ
+
+ FAIL  src/__tests__/SaveManager.test.js > SaveManager > load restores saved blocks and enemies
+AssertionError: expected +0 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 0
+
+ 笶ｯ src/__tests__/SaveManager.test.js:122:52
+    120|         expect(Block.fromSaveData).toHaveBeenCalledWith(blockData);
+    121|         expect(Slime.fromSaveData).toHaveBeenCalledWith(slimeData);
+    122|         expect(game.entityManager.entities.length).toBe(2);
+       |                                                    ^
+    123|         expect(game.collidables).toContain(game.entityManager.entities窶ｦ
+    124|         expect(game.showNotification).toHaveBeenCalled();
+
+竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ竡ｯ[1/1]竡ｯ
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 5 passed (6)
+   Start at  14:10:39
+   Duration  722ms (transform 38ms, setup 26ms, collect 91ms, tests 20ms, environment 464ms, prepare 10ms)
+

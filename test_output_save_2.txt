@@ -1,0 +1,16 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.13 [39m[90mC:/source/gemini_3d_demo_20251119_001[39m
+
+ [31m笶ｯ[39m src/__tests__/SaveManager.test.js [2m([22m[2m6 tests[22m[2m | [22m[31m1 failed[39m[2m | [22m[33m5 skipped[39m[2m)[22m[32m 9[2mms[22m[39m
+     [2m[90m竊・[39m[22m quickSave stores data in localStorage
+     [2m[90m竊・[39m[22m quickLoad restores player state
+     [2m[90m竊・[39m[22m getSlots returns sorted save slots
+     [2m[90m竊・[39m[22m save creates a slot with player position summary
+[31m     [31mﾃ・[31m load restores saved blocks and enemies[39m[32m 8[2mms[22m[39m
+     [2m[90m竊・[39m[22m delete removes a slot
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[33m5 skipped[39m[90m (6)[39m
+[2m   Start at [22m 13:39:00
+[2m   Duration [22m 710ms[2m (transform 40ms, setup 25ms, collect 100ms, tests 9ms, environment 457ms, prepare 11ms)[22m
+

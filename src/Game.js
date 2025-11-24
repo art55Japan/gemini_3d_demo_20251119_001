@@ -29,7 +29,8 @@ export class Game {
         // Audio
         this.audioManager = new AudioManager();
 
-        // Click to Start Overlay
+        // Click to Start Overlay - DISABLED for easier debugging
+        /*
         const overlay = document.createElement('div');
         overlay.style.position = 'absolute';
         overlay.style.top = '0';
@@ -52,6 +53,10 @@ export class Game {
             // Ensure focus is on window
             window.focus();
         });
+        */
+
+        // Auto-resume audio context
+        this.audioManager.resumeContext();
 
         // Start BGM on first interaction (backup)
         window.addEventListener('keydown', () => {

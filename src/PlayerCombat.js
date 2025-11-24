@@ -50,7 +50,9 @@ class AttackingState extends CombatState {
         // Yes! Triangle wave function eliminates the if-else branch.
 
         const triangleWave = 1 - Math.abs(progress * 2 - 1);
-        this.combat.sword.rotation.x = this.combat.baseSwordRotation + triangleWave * (Math.PI / 2);
+        if (this.combat.sword) {
+            this.combat.sword.rotation.x = this.combat.baseSwordRotation + triangleWave * (Math.PI / 2);
+        }
 
         // Hit Detection Window (0.2 to 0.6)
         // Can use a boolean check or just run it. Running it multiple times is fine if we have a "hasHit" flag?
@@ -65,13 +67,17 @@ class AttackingState extends CombatState {
     }
 
     exit() {
-        this.combat.sword.rotation.x = this.combat.baseSwordRotation;
+        if (this.combat.sword) {
+            this.combat.sword.rotation.x = this.combat.baseSwordRotation;
+        }
     }
 }
 
 export class PlayerCombat {
     constructor(player) {
         this.player = player;
+        // Sword might not be loaded yet, or might not exist in the new model.
+        // We will check for it dynamically or try to find it.
         this.sword = this.player.mesh.getObjectByName('sword');
         this.baseSwordRotation = Math.PI / 4;
 
@@ -79,6 +85,11 @@ export class PlayerCombat {
     }
 
     setState(newState) {
+        // Refresh sword reference if it was missing (async load)
+        if (!this.sword) {
+            this.sword = this.player.mesh.getObjectByName('sword');
+        }
+
         if (this.currentState) this.currentState.exit();
         this.currentState = newState;
         this.currentState.enter();

@@ -1,0 +1,16 @@
+
+ RUN  v4.0.13 C:/source/gemini_3d_demo_20251119_001
+
+ 笶ｯ src/__tests__/SaveManager.test.js (6 tests | 1 failed | 5 skipped) 9ms
+     竊・quickSave stores data in localStorage
+     竊・quickLoad restores player state
+     竊・getSlots returns sorted save slots
+     竊・save creates a slot with player position summary
+     ﾃ・load restores saved blocks and enemies 8ms
+     竊・delete removes a slot
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 5 skipped (6)
+   Start at  13:49:23
+   Duration  721ms (transform 38ms, setup 29ms, collect 96ms, tests 9ms, environment 466ms, prepare 9ms)
+

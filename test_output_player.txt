@@ -1,0 +1,19 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.13 [39m[90mC:/source/gemini_3d_demo_20251119_001[39m
+
+ [31m笶ｯ[39m src/__tests__/Player.test.js [2m([22m[2m9 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 12[2mms[22m[39m
+[31m     [31mﾃ・[31m should initialize with position at origin[39m[32m 7[2mms[22m[39m
+     [32m笨・[39m should create mesh and add to scene[32m 2[2mms[22m[39m
+     [32m笨・[39m should initialize components (physics, combat, collision)[32m 0[2mms[22m[39m
+     [32m笨・[39m should not be saveable (saved separately)[32m 0[2mms[22m[39m
+     [32m笨・[39m should rotate left on input[32m 1[2mms[22m[39m
+     [32m笨・[39m should rotate right on input[32m 0[2mms[22m[39m
+     [32m笨・[39m should call physics update[32m 0[2mms[22m[39m
+     [32m笨・[39m should call combat update[32m 0[2mms[22m[39m
+     [32m笨・[39m should call collision check[32m 0[2mms[22m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m8 passed[39m[22m[90m (9)[39m
+[2m   Start at [22m 13:36:34
+[2m   Duration [22m 688ms[2m (transform 34ms, setup 30ms, collect 83ms, tests 12ms, environment 449ms, prepare 9ms)[22m
+

@@ -11,7 +11,7 @@ const createMockGame = () => {
         mesh: { rotation: { y: 0 } },
         physics: { velocity: { set: vi.fn() }, onGround: false },
     };
-    const entityManager = { entities: [] };
+    const entityManager = { entities: [], add: vi.fn((e) => entityManager.entities.push(e)), remove: vi.fn() };
     const collidables = [];
     const showNotification = vi.fn();
     return { player, entityManager, collidables, showNotification };

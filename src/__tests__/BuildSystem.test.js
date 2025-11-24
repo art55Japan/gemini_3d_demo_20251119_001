@@ -114,6 +114,8 @@ describe('BuildSystem', () => {
         const input = mockInput({ removeBlock: true, mouse: { x: 0, y: 0 } });
         vi.spyOn(bs, 'getRaycastHit').mockReturnValue({
             object: { userData: { entity: block } },
+            point: new THREE.Vector3(0, 0, 0),
+            face: { normal: new THREE.Vector3(0, 1, 0) },
         });
         bs.update(0.1, input);
         expect(block.shouldRemove).toBe(true);

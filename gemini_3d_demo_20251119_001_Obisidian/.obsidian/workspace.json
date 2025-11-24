@@ -27,12 +27,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "設計書_ClaudeCodeによるリバース/08_3Dグラフィックス設計.md",
+                "file": "設計書_ClaudeCodeによるリバース/01_プロジェクト概要.md",
                 "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "08_3Dグラフィックス設計"
+              "title": "01_プロジェクト概要"
             }
           }
         ],
@@ -109,7 +109,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "設計書_ClaudeCodeによるリバース/08_3Dグラフィックス設計.md",
+                "file": "設計書_ClaudeCodeによるリバース/01_プロジェクト概要.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -119,7 +119,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "08_3Dグラフィックス設計へのバックリンク"
+              "title": "01_プロジェクト概要へのバックリンク"
             }
           },
           {
@@ -128,12 +128,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "設計書_ClaudeCodeによるリバース/08_3Dグラフィックス設計.md",
+                "file": "設計書_ClaudeCodeによるリバース/01_プロジェクト概要.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "08_3Dグラフィックス設計からのアウトゴーイングリンク"
+              "title": "01_プロジェクト概要からのアウトゴーイングリンク"
             }
           },
           {
@@ -171,13 +171,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "設計書_ClaudeCodeによるリバース/08_3Dグラフィックス設計.md",
+                "file": "設計書_ClaudeCodeによるリバース/01_プロジェクト概要.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "08_3Dグラフィックス設計のアウトライン"
+              "title": "01_プロジェクト概要のアウトライン"
             }
           }
         ]
@@ -198,22 +198,34 @@
       "bases:Create new base": false
     }
   },
-  "active": "d80697550ee126de",
+  "active": "9cdd2a999f41356d",
   "lastOpenFiles": [
-    "設計書_Gemini3によるリバース",
+    "設計書_Codexよるリバース/Architecture/状態遷移図.md",
+    "設計書_Codexよるリバース/Architecture/処理シーケンス.md",
+    "設計書_Codexよるリバース/Architecture/シーケンス図.md",
+    "設計書_Codexよるリバース/Architecture/オブジェクト図.md",
+    "設計書_Codexよるリバース/Architecture/アーキテクチャ図.md",
+    "設計書_Codexよるリバース/Architecture/クラス図.md",
+    "設計書_ClaudeCodeによるリバース/08_3Dグラフィックス設計.md",
     "設計書_ClaudeCodeによるリバース/07_セーブシステム設計.md",
     "設計書_ClaudeCodeによるリバース/06_ゲームループ・入力設計.md",
+    "設計書_ClaudeCodeによるリバース/02_アーキテクチャ設計.md",
+    "設計書_ClaudeCodeによるリバース/01_プロジェクト概要.md",
+    "設計書_Gemini3によるリバース/03_EntitySystem.md",
+    "設計書_Gemini3によるリバース/02_PlayerSystem.md",
+    "設計書_Gemini3によるリバース/05_InputAndAudio.md",
+    "設計書_Gemini3によるリバース/04_WorldAndBuild.md",
+    "設計書_Gemini3によるリバース/01_Architecture.md",
+    "設計書_Gemini3によるリバース/00_Index.md",
+    "設計書_Gemini3によるリバース",
     "設計書_ClaudeCodeによるリバース/05_プレイヤーシステム設計.md",
     "設計書_ClaudeCodeによるリバース/04_エンティティシステム設計.md",
     "設計書_ClaudeCodeによるリバース/03_クラス設計.md",
     "設計書_ClaudeCodeによるリバース/ドキュメント作成計画/ドキュメント作成計画.md",
     "設計書_ClaudeCodeによるリバース/10_データ定義書.md",
     "設計書_ClaudeCodeによるリバース/09_UI設計.md",
-    "設計書_ClaudeCodeによるリバース/08_3Dグラフィックス設計.md",
     "設計書_ClaudeCodeによるリバース/_MOC_設計書.md.tmp.42064.1763910677846",
-    "設計書_ClaudeCodeによるリバース/02_アーキテクチャ設計.md",
     "設計書_ClaudeCodeによるリバース/_MOC_設計書.md.tmp.42064.1763910669873",
-    "設計書_ClaudeCodeによるリバース/01_プロジェクト概要.md",
     "設計書_ClaudeCodeによるリバース/10_データ定義書.md.tmp.42064.1763910634569",
     "設計書_ClaudeCodeによるリバース/08_3Dグラフィックス設計.md.tmp.42064.1763910470430",
     "設計書_ClaudeCodeによるリバース/07_セーブシステム設計.md.tmp.42064.1763910359979",
@@ -223,18 +235,6 @@
     "設計書_ClaudeCodeによるリバース/_MOC_設計書.md",
     "入門レベル/00_はじめに/04_アーキテクチャ概要.md",
     "設計書_ClaudeCodeによるリバース/ドキュメント作成計画",
-    "設計書_ClaudeCodeによるリバース/新しいフォルダー",
-    "入門レベル/00_はじめに/01_学習の進め方.md",
-    "入門レベル/00_はじめに/02_開発環境セットアップ.md",
-    "入門レベル/00_はじめに/00_このドキュメントについて.md",
-    "設計書_Codexよるリバース/Architecture/アーキテクチャ図.md",
-    "設計書_Codexよるリバース/Process/ビルドとテスト.md",
-    "設計書_Codexよるリバース/Process/トラブルシュート.md",
-    "設計書_Codexよるリバース/Process/デプロイ.md",
-    "設計書_Codexよるリバース/Process/テストマトリクス.md",
-    "設計書_Codexよるリバース/Gameplay/エンティティ.md",
-    "設計書_Codexよるリバース/Architecture/状態遷移図.md",
-    "設計書_Codexよるリバース/Architecture/処理シーケンス.md",
-    "設計書_Codexよるリバース/Architecture/概要.md"
+    "入門レベル/00_はじめに/01_学習の進め方.md"
   ]
 }

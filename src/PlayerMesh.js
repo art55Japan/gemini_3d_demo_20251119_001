@@ -1,354 +1,159 @@
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 export class PlayerMesh {
     create() {
         const group = new THREE.Group();
 
-        // Textures
-        const textures = {
-            whiteFelt: this.createFeltTexture('#ffffff'),
-            pinkFelt: this.createFeltTexture('#FFB6C1'),
-            blueFelt: this.createFeltTexture('#0000ff')
-        };
+        const loader = new GLTFLoader();
+        // Load the correct model identified from logs
+        loader.load('/models/new_rabbit_model.glb', (gltf) => {
+            const model = gltf.scene;
 
-        // Materials
-        const materials = this.createMaterials(textures);
+            // Adjust scale and rotation to match the game world
+            model.rotation.y = -Math.PI / 2; // -90 degrees to face forward correctly
 
-        // Build Character Parts
-        this.createBody(group, materials);
-        this.createLegs(group, materials);
-        this.createHead(group, materials);
-        this.createArmor(group, materials);
-        this.createAccessories(group, materials);
+            // Debug logs & Normalization
+            const box = new THREE.Box3().setFromObject(model);
+            const size = box.getSize(new THREE.Vector3());
+            const center = box.getCenter(new THREE.Vector3());
 
-        // Rotate inner group to face -Z (North)
-        // The model was built facing +Z (South), so we rotate 180 degrees
-        group.rotation.y = Math.PI;
+            console.log(`Player Model Loaded! Size: ${size.x.toFixed(2)}, ${size.y.toFixed(2)}, ${size.z.toFixed(2)}`);
+            console.log(`Model Center: ${center.x.toFixed(2)}, ${center.y.toFixed(2)}, ${center.z.toFixed(2)}`);
 
-        // Create a root group to return
-        // This allows the Player class to rotate the root without resetting the model's internal correction
-        const rootGroup = new THREE.Group();
-        rootGroup.add(group);
+            // Target height ~1.5 units
+            const targetHeight = 1.5;
+            const scaleFactor = targetHeight / size.y;
 
-        return rootGroup;
-    }
+            if (isFinite(scaleFactor) && scaleFactor > 0) {
+                model.scale.set(scaleFactor, scaleFactor, scaleFactor);
+                console.log(`Applied Scale Factor: ${scaleFactor.toFixed(4)}`);
 
-    createMaterials(textures) {
-        return {
-            whiteFelt: new THREE.MeshStandardMaterial({
-                map: textures.whiteFelt,
-                bumpMap: textures.whiteFelt,
-                bumpScale: 0.02,
-                roughness: 1.0
-            }),
-            metal: new THREE.MeshStandardMaterial({ color: 0x888888, roughness: 0.4, metalness: 0.6 }),
-            blueCloth: new THREE.MeshStandardMaterial({
-                map: textures.blueFelt,
-                bumpMap: textures.blueFelt,
-                bumpScale: 0.01,
-                side: THREE.DoubleSide,
-                roughness: 0.9
-            }),
-            leather: new THREE.MeshStandardMaterial({ color: 0x8B4513, roughness: 0.8 }),
-            pinkSkin: new THREE.MeshStandardMaterial({
-                map: textures.pinkFelt,
-                bumpMap: textures.pinkFelt,
-                bumpScale: 0.01,
-                roughness: 1.0
-            }),
-            black: new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.8 }),
-            plasticBlack: new THREE.MeshStandardMaterial({ color: 0x000000, roughness: 0.1, metalness: 0.1 }), // Glossy plastic
-            darkMetal: new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.5, metalness: 0.8 }),
-            highlightMat: new THREE.MeshBasicMaterial({ color: 0xffffff })
-        };
-    }
+                // Re-center if needed (e.g. if origin is at center of body, move it up so feet are at 0)
+                // We want the bottom of the box to be at 0
+                const newBox = new THREE.Box3().setFromObject(model);
+                const newMin = newBox.min;
+                model.position.y -= newMin.y;
+                console.log(`Adjusted Y Position by: ${-newMin.y.toFixed(4)}`);
+            }
 
-    createBody(group, materials) {
-        const bodyGeo = new THREE.SphereGeometry(0.4, 32, 32);
-        const body = new THREE.Mesh(bodyGeo, materials.whiteFelt);
-        body.position.y = 0.5; // Lifted 0.1
-        body.castShadow = true;
-        group.add(body);
-    }
+            // FINAL Material Configuration
+            const materials = {
+                felt: new THREE.MeshStandardMaterial({
+                    color: 0xFFFFFF, // Pure White
+                    roughness: 1.0,  // Matte
+                    metalness: 0.0,
+                    emissive: 0x333333, // Self-illumination
+                }),
+                armor: new THREE.MeshStandardMaterial({
+                    color: 0xFAFAFA, // Slightly whiter silver (near white)
+                    roughness: 0.1,
+                    metalness: 0.9,
+                }),
+                eye: new THREE.MeshStandardMaterial({
+                    color: 0x000000, // Black eye
+                    roughness: 0.5,
+                    metalness: 0.0,
+                    emissive: 0x111111, // slight dim glow
+                }),
+                cape: new THREE.MeshStandardMaterial({
+                    color: 0x0000FF, // Blue
+                    roughness: 0.8,
+                    metalness: 0.1,
+                }),
+            };
 
-    createLegs(group, materials) {
-        const legGeo = new THREE.CapsuleGeometry(0.1, 0.5, 4, 8); // Longer (0.4 -> 0.5)
+            // Apply materials to parts
+            let colorIndex = 0;
+            let headMesh = null; // reference to head (Part 8)
 
-        const legL = new THREE.Mesh(legGeo, materials.whiteFelt);
-        legL.position.set(-0.15, 0.25, 0); // Lifted center to match length
-        group.add(legL);
+            model.traverse((child) => {
+                if (child.isMesh) {
+                    child.castShadow = true;
+                    child.receiveShadow = true;
 
-        const legR = new THREE.Mesh(legGeo, materials.whiteFelt);
-        legR.position.set(0.15, 0.25, 0); // Lifted center
-        group.add(legR);
+                    if (child.material) {
+                        let mat;
+                        let partType;
 
-        // Boots
-        const bootGeo = new THREE.CapsuleGeometry(0.12, 0.15, 4, 8);
+                        // Store head mesh reference (Part 8)
+                        if (colorIndex === 8) {
+                            headMesh = child;
+                        }
 
-        const bootL = new THREE.Mesh(bootGeo, materials.metal);
-        bootL.position.set(-0.15, 0.1, 0); // Kept at bottom
-        group.add(bootL);
+                        // Part 8, 12 = Felt (White)
+                        if (colorIndex === 8 || colorIndex === 12) {
+                            mat = materials.felt;
+                            partType = 'FELT';
+                        }
+                        // Part 9 ONLY = Cape (Blue)
+                        else if (colorIndex === 9) {
+                            mat = materials.cape;
+                            partType = 'CAPE';
+                        }
+                        // All others = Armor (Silver)
+                        else {
+                            mat = materials.armor;
+                            partType = 'ARMOR';
+                        }
 
-        const bootR = new THREE.Mesh(bootGeo, materials.metal);
-        bootR.position.set(0.15, 0.1, 0);
-        group.add(bootR);
+                        child.material = mat.clone();
+                        console.log(`Part ${colorIndex} ("${child.name}") = ${partType}`);
+                        colorIndex++;
+                    }
+                }
+            });
 
-        // Feet
-        const footGeo = new THREE.SphereGeometry(0.12, 16, 16); // Rounder and bigger
+            // Add two eye placeholder spheres attached to head mesh
+            if (headMesh) {
+                // Left eye
+                const eyeSphereLeft = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.03, 16, 16),
+                    materials.eye
+                );
+                // Position for left eye (original position)
+                eyeSphereLeft.position.set(0.1, 0.14, 0.1);
+                headMesh.add(eyeSphereLeft);
 
-        const footL = new THREE.Mesh(footGeo, materials.metal);
-        footL.scale.set(1, 0.6, 1.5); // Flattened and elongated
-        footL.position.set(-0.15, 0.05, 0.1); // Adjusted position
-        group.add(footL);
+                // Left eye highlight
+                const highlightLeft = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.01, 8, 8),
+                    new THREE.MeshBasicMaterial({
+                        color: 0xFFFFFF,
+                        transparent: true,
+                        opacity: 0.9
+                    })
+                );
+                highlightLeft.position.set(0.01, 0.01, 0.015);
+                eyeSphereLeft.add(highlightLeft);
 
-        const footR = new THREE.Mesh(footGeo, materials.metal);
-        footR.scale.set(1, 0.6, 1.5);
-        footR.position.set(0.15, 0.05, 0.1);
-        group.add(footR);
-    }
+                // Right eye
+                const eyeSphereRight = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.03, 16, 16),
+                    materials.eye
+                );
+                // Position for right eye (Z axis controls left-right positioning)
+                eyeSphereRight.position.set(0.1, 0.14, -0.05);
+                headMesh.add(eyeSphereRight);
 
-    createHead(group, materials) {
-        const headGroup = new THREE.Group();
-        headGroup.position.y = 0.95; // Lifted 0.1
-        group.add(headGroup);
+                // Right eye highlight
+                const highlightRight = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.01, 8, 8),
+                    new THREE.MeshBasicMaterial({
+                        color: 0xFFFFFF,
+                        transparent: true,
+                        opacity: 0.9
+                    })
+                );
+                highlightRight.position.set(0.01, 0.01, 0.015);
+                eyeSphereRight.add(highlightRight);
+            }
 
-        // Head Base
-        const headGeo = new THREE.SphereGeometry(0.35, 32, 32);
-        const head = new THREE.Mesh(headGeo, materials.whiteFelt);
-        head.castShadow = true;
-        headGroup.add(head);
-
-        // Ears
-        const earGeo = new THREE.CapsuleGeometry(0.08, 0.45, 4, 8);
-
-        const earL = new THREE.Mesh(earGeo, materials.whiteFelt);
-        earL.position.set(-0.12, 0.4, 0);
-        earL.rotation.z = 0.1;
-        earL.castShadow = true;
-        headGroup.add(earL);
-
-        const earR = new THREE.Mesh(earGeo, materials.whiteFelt);
-        earR.position.set(0.12, 0.4, 0);
-        earR.rotation.z = -0.1;
-        earR.castShadow = true;
-        headGroup.add(earR);
-
-        // Inner Ears (Pink)
-        const innerEarGeo = new THREE.CapsuleGeometry(0.05, 0.35, 4, 8);
-
-        const innerEarL = new THREE.Mesh(innerEarGeo, materials.pinkSkin);
-        innerEarL.position.set(-0.12, 0.4, 0.06);
-        innerEarL.rotation.z = 0.1;
-        headGroup.add(innerEarL);
-
-        const innerEarR = new THREE.Mesh(innerEarGeo, materials.pinkSkin);
-        innerEarR.position.set(0.12, 0.4, 0.06);
-        innerEarR.rotation.z = -0.1;
-        headGroup.add(innerEarR);
-
-        // Eyes
-        const eyeGeo = new THREE.SphereGeometry(0.05, 32, 32); // Bigger and smoother
-
-        const eyeL = new THREE.Mesh(eyeGeo, materials.plasticBlack);
-        eyeL.position.set(-0.13, 0.05, 0.32); // Moved back
-        headGroup.add(eyeL);
-
-        const eyeR = new THREE.Mesh(eyeGeo, materials.plasticBlack);
-        eyeR.position.set(0.13, 0.05, 0.32); // Moved back
-        headGroup.add(eyeR);
-
-        // Eye Highlights
-        const highlightGeo = new THREE.SphereGeometry(0.015);
-
-        const highlightL = new THREE.Mesh(highlightGeo, materials.highlightMat);
-        highlightL.position.set(-0.02, 0.02, 0.04); // Relative to eye
-        eyeL.add(highlightL);
-
-        const highlightR = new THREE.Mesh(highlightGeo, materials.highlightMat);
-        highlightR.position.set(-0.02, 0.02, 0.04); // Relative to eye
-        eyeR.add(highlightR);
-
-        // Nose
-        const noseGeo = new THREE.SphereGeometry(0.02);
-        const nose = new THREE.Mesh(noseGeo, materials.pinkSkin);
-        nose.position.set(0, -0.02, 0.34);
-        headGroup.add(nose);
-
-        // Mouth (Small cylinder line)
-        const mouthGeo = new THREE.CylinderGeometry(0.005, 0.005, 0.05);
-
-        const mouthL = new THREE.Mesh(mouthGeo, materials.black);
-        mouthL.position.set(-0.02, -0.08, 0.32);
-        mouthL.rotation.z = 0.5;
-        mouthL.rotation.x = 1.5;
-        headGroup.add(mouthL);
-
-        const mouthR = new THREE.Mesh(mouthGeo, materials.black);
-        mouthR.position.set(0.02, -0.08, 0.32);
-        mouthR.rotation.z = -0.5;
-        mouthR.rotation.x = 1.5;
-        headGroup.add(mouthR);
-
-        // Helmet
-        const helmetGeo = new THREE.SphereGeometry(0.36, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.5);
-        const helmet = new THREE.Mesh(helmetGeo, materials.metal);
-        helmet.position.y = 0.1; // Relative to headGroup
-        helmet.castShadow = true;
-        headGroup.add(helmet);
-
-        // Helmet Rim
-        const rimGeo = new THREE.TorusGeometry(0.36, 0.03, 8, 32); // Wider rim (0.02 -> 0.03)
-        const rim = new THREE.Mesh(rimGeo, materials.metal);
-        rim.rotation.x = Math.PI / 2;
-        rim.position.y = 0.1;
-        headGroup.add(rim);
-
-        // Helmet Bolts
-        const boltGeo = new THREE.SphereGeometry(0.01); // Smaller
-        for (let i = 0; i < 48; i++) { // Increased to 48 (3x)
-            const angle = (i / 48) * Math.PI * 2;
-            const bolt = new THREE.Mesh(boltGeo, materials.darkMetal);
-            bolt.position.set(
-                Math.cos(angle) * 0.40, // Moved out (0.39 -> 0.40) to match wider rim
-                0.12,
-                Math.sin(angle) * 0.40
-            );
-            headGroup.add(bolt);
-        }
-    }
-
-    createArmor(group, materials) {
-        // Chest Armor
-        const armorGeo = new THREE.CylinderGeometry(0.41, 0.41, 0.3, 32);
-        const armor = new THREE.Mesh(armorGeo, materials.metal);
-        armor.position.y = 0.65; // Lifted 0.1
-        armor.castShadow = true;
-        group.add(armor);
-
-        // Armor Collar (Rounded top)
-        const collarGeo = new THREE.TorusGeometry(0.41, 0.03, 8, 32);
-        const collar = new THREE.Mesh(collarGeo, materials.metal);
-        collar.position.y = 0.8; // Top of armor (0.65 + 0.15)
-        collar.rotation.x = Math.PI / 2;
-        group.add(collar);
-
-        // Chest Rivets (Royal Crest Pattern)
-        const chestBoltGeo = new THREE.SphereGeometry(0.012); // Even smaller for fine detail
-        const positions = [
-            // Center
-            { x: 0, y: 0.65 },
-            // Inner Diamond
-            { x: 0, y: 0.68 }, { x: 0, y: 0.62 },
-            { x: -0.04, y: 0.65 }, { x: 0.04, y: 0.65 },
-            // Outer Cross Tips
-            { x: 0, y: 0.73 }, { x: 0, y: 0.57 },
-            { x: -0.09, y: 0.65 }, { x: 0.09, y: 0.65 },
-            // Corner Accents
-            { x: -0.06, y: 0.69 }, { x: 0.06, y: 0.69 },
-            { x: -0.06, y: 0.61 }, { x: 0.06, y: 0.61 }
-        ];
-
-        positions.forEach(pos => {
-            const bolt = new THREE.Mesh(chestBoltGeo, materials.darkMetal);
-            const z = Math.sqrt(0.41 * 0.41 - pos.x * pos.x);
-            bolt.position.set(pos.x, pos.y, z);
-            group.add(bolt);
+            group.add(model);
+        }, undefined, (error) => {
+            console.error('An error happened loading the player model:', error);
         });
 
-        // Shoulder Pads
-        // More rounded: larger radius, fuller sphere section (0.5 PI -> 0.75 PI)
-        const shoulderGeo = new THREE.SphereGeometry(0.16, 16, 16, 0, Math.PI * 2, 0, Math.PI * 0.75);
-
-        const shoulderL = new THREE.Mesh(shoulderGeo, materials.metal);
-        shoulderL.position.set(-0.35, 0.65, 0); // Adjusted Y slightly
-        shoulderL.rotation.z = 0.5;
-        group.add(shoulderL);
-
-        const shoulderR = new THREE.Mesh(shoulderGeo, materials.metal);
-        shoulderR.position.set(0.35, 0.65, 0); // Adjusted Y slightly
-        shoulderR.rotation.z = -0.5;
-        group.add(shoulderR);
-
-        // Belt
-        const beltGeo = new THREE.CylinderGeometry(0.42, 0.42, 0.08, 32);
-        const belt = new THREE.Mesh(beltGeo, materials.leather);
-        belt.position.y = 0.45; // Lifted 0.1
-        group.add(belt);
-
-        const buckleGeo = new THREE.BoxGeometry(0.1, 0.1, 0.05);
-        const buckle = new THREE.Mesh(buckleGeo, materials.metal);
-        buckle.position.set(0, 0.45, 0.4); // Lifted 0.1
-        group.add(buckle);
-    }
-
-    createAccessories(group, materials) {
-        // Cape
-        const capeGeo = new THREE.PlaneGeometry(0.6, 0.8);
-        const cape = new THREE.Mesh(capeGeo, materials.blueCloth);
-        cape.position.set(0, 0.8, -0.35); // Lifted 0.1
-        cape.rotation.x = THREE.MathUtils.degToRad(10);
-        cape.rotation.y = THREE.MathUtils.degToRad(180);
-        group.add(cape);
-
-        // Sword (Right Hand)
-        const swordGroup = new THREE.Group();
-        swordGroup.position.set(0.5, 0.6, 0.3); // Lifted 0.1
-
-        const handleGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.2);
-        const handle = new THREE.Mesh(handleGeo, materials.leather);
-        swordGroup.add(handle);
-
-        const guardGeo = new THREE.BoxGeometry(0.2, 0.02, 0.05);
-        const guard = new THREE.Mesh(guardGeo, materials.metal);
-        guard.position.y = 0.1;
-        swordGroup.add(guard);
-
-        const bladeGeo = new THREE.BoxGeometry(0.06, 0.6, 0.02);
-        const blade = new THREE.Mesh(bladeGeo, materials.metal);
-        blade.position.y = 0.4;
-        swordGroup.add(blade);
-
-        swordGroup.rotation.x = Math.PI / 4;
-        swordGroup.name = 'sword';
-        group.add(swordGroup);
-
-        // Shield (Left Hand)
-        const shieldGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.05, 32);
-        const shield = new THREE.Mesh(shieldGeo, materials.metal);
-        shield.position.set(-0.4, 0.6, 0.3);
-        shield.rotation.z = Math.PI / 2;
-        shield.rotation.y = Math.PI / 2;
-        group.add(shield);
-    }
-
-    createFeltTexture(colorHex) {
-        const canvas = document.createElement('canvas');
-        canvas.width = 512;
-        canvas.height = 512;
-        const ctx = canvas.getContext('2d');
-
-        // Base color
-        ctx.fillStyle = colorHex;
-        ctx.fillRect(0, 0, 512, 512);
-
-        // Noise
-        for (let i = 0; i < 50000; i++) {
-            const x = Math.random() * 512;
-            const y = Math.random() * 512;
-            const opacity = Math.random() * 0.1 + 0.05;
-            ctx.fillStyle = `rgba(0, 0, 0, ${opacity})`;
-            ctx.fillRect(x, y, 2, 2);
-
-            const x2 = Math.random() * 512;
-            const y2 = Math.random() * 512;
-            const opacity2 = Math.random() * 0.1 + 0.05;
-            ctx.fillStyle = `rgba(255, 255, 255, ${opacity2})`;
-            ctx.fillRect(x2, y2, 2, 2);
-        }
-
-        const texture = new THREE.CanvasTexture(canvas);
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-        return texture;
+        return group;
     }
 }
