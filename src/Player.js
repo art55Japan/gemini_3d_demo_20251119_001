@@ -5,13 +5,13 @@ import { PlayerCombat } from './PlayerCombat.js';
 import { PlayerCollision } from './PlayerCollision.js';
 
 export class Player {
-    constructor(scene, audioManager) {
+    constructor(scene, audioManager, animationParams, playerParams) {
         this.scene = scene;
         this.audioManager = audioManager;
         this.position = new THREE.Vector3(0, 0, 0);
 
         // Create PlayerMesh instance and its group
-        this.playerMesh = new PlayerMesh();
+        this.playerMesh = new PlayerMesh(animationParams, playerParams);
         this.mesh = this.playerMesh.create();
         this.mesh.position.copy(this.position);
         this.mesh.rotation.y = 0; // Face Forward (-Z) by default

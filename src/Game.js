@@ -10,6 +10,9 @@ import { BuildSystem } from './BuildSystem.js';
 import { SaveManager } from './SaveManager.js';
 import { SaveLoadUI } from './SaveLoadUI.js';
 import { Block } from './Block.js';
+import { AnimationParameters } from './config/AnimationParameters.js';
+import { CameraParameters } from './config/CameraParameters.js';
+import { PlayerParameters } from './config/PlayerParameters.js';
 
 export class Game {
     constructor() {
@@ -86,8 +89,13 @@ export class Game {
         // Entity Manager
         this.entityManager = new EntityManager(this.scene);
 
+        // Create parameter objects
+        const animationParams = new AnimationParameters();
+        const cameraParams = new CameraParameters();
+        const playerParams = new PlayerParameters();
+
         // Player
-        this.player = new Player(this.scene, this.audioManager); // Pass audioManager
+        this.player = new Player(this.scene, this.audioManager, animationParams, playerParams);
         this.entityManager.add(this.player);
 
         // Environment
@@ -108,7 +116,7 @@ export class Game {
         this.camera.lookAt(this.player.position);
 
         // Camera Manager
-        this.cameraManager = new CameraManager(this.camera, this.player, this.renderer);
+        this.cameraManager = new CameraManager(this.camera, this.player, this.renderer, cameraParams);
 
         // Save Manager
         this.saveManager = new SaveManager(this);

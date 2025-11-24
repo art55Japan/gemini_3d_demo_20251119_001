@@ -2,7 +2,9 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 export class PlayerMesh {
-    constructor() {
+    constructor(animationParams, playerParams) {
+        this.animationParams = animationParams;
+        this.playerParams = playerParams;
         this.model = null;
         this.headMesh = null;
         this.animationTime = 0;
@@ -15,16 +17,15 @@ export class PlayerMesh {
         loader.load('/models/new_rabbit_model.glb', (gltf) => {
             const model = gltf.scene;
             // Rotate to face away from camera
-            model.rotation.y = Math.PI / 2;
+            model.rotation.y = this.playerParams.initialRotationY;
             // Debug logs & normalization
             const box = new THREE.Box3().setFromObject(model);
             const size = box.getSize(new THREE.Vector3());
             const center = box.getCenter(new THREE.Vector3());
             console.log(`Player Model Loaded! Size: ${size.x.toFixed(2)}, ${size.y.toFixed(2)}, ${size.z.toFixed(2)}`);
             console.log(`Model Center: ${center.x.toFixed(2)}, ${center.y.toFixed(2)}, ${center.z.toFixed(2)}`);
-            // Scale to target height (~1.5 units)
-            const targetHeight = 1.5;
-            const scaleFactor = targetHeight / size.y;
+            // Scale to target height
+            const scaleFactor = this.playerParams.targetHeight / size.y;
             if (isFinite(scaleFactor) && scaleFactor > 0) {
                 model.scale.set(scaleFactor, scaleFactor, scaleFactor);
                 console.log(`Applied Scale Factor: ${scaleFactor.toFixed(4)}`);
@@ -92,19 +93,16 @@ export class PlayerMesh {
     update(delta, velocity) {
         if (!this.model) return;
         const speed = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
-        if (speed > 0.05) { // lower threshold for visibility
-            this.animationTime += delta * 8;
-            const bobAmount = 0.2; // stronger bobbing
-            const bobOffset = Math.abs(Math.sin(this.animationTime)) * bobAmount;
+        if (speed > this.animationParams.speedThreshold) {
+            this.animationTime += delta * this.animationParams.timeMultiplier;
+            const bobOffset = Math.abs(Math.sin(this.animationTime)) * this.animationParams.bobAmount;
             this.model.position.y = (this.initialModelY || 0) + bobOffset;
-            const tiltAmount = 0.1;
-            const tiltOffset = Math.sin(this.animationTime * 2) * tiltAmount;
+            const tiltOffset = Math.sin(this.animationTime * 2) * this.animationParams.tiltAmount;
             this.model.rotation.z = tiltOffset;
         } else {
             const targetY = this.initialModelY || 0;
-            const lerpFactor = 0.1;
-            this.model.position.y += (targetY - this.model.position.y) * lerpFactor;
-            this.model.rotation.z += (0 - this.model.rotation.z) * lerpFactor;
+            this.model.position.y += (targetY - this.model.position.y) * this.animationParams.lerpFactor;
+            this.model.rotation.z += (0 - this.model.rotation.z) * this.animationParams.lerpFactor;
             if (Math.abs(this.model.position.y - targetY) < 0.001) this.model.position.y = targetY;
             if (Math.abs(this.model.rotation.z) < 0.001) this.model.rotation.z = 0;
         }

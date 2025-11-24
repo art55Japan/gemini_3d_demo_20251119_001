@@ -1,16 +1,20 @@
 import * as THREE from 'three';
 
 export class CameraManager {
-    constructor(camera, player, renderer) {
+    constructor(camera, player, renderer, cameraParams) {
         this.camera = camera;
         this.player = player;
         this.renderer = renderer;
+        this.params = cameraParams;
         this.isFirstPerson = false;
         this.toggleCooldown = 0;
 
         // Orbit Camera State
-        // theta = 0 means looking at -Z (Back of the character, assuming character faces -Z)
-        this.spherical = new THREE.Spherical(4, Math.PI / 3, 0);
+        this.spherical = new THREE.Spherical(
+            this.params.orbitRadius,
+            this.params.initialPhi,
+            this.params.initialTheta
+        );
         this.target = new THREE.Vector3();
     }
 
@@ -22,7 +26,7 @@ export class CameraManager {
         // Handle Toggle Input
         if (input && input.toggleView && this.toggleCooldown <= 0) {
             this.toggleView();
-            this.toggleCooldown = 0.3; // Debounce
+            this.toggleCooldown = this.params.toggleCooldown;
         }
         if (this.toggleCooldown > 0) this.toggleCooldown -= delta;
 
@@ -32,7 +36,7 @@ export class CameraManager {
             if (this.player.mesh) {
                 if (this.isFirstPerson) {
                     // FPS Camera: Inside player head
-                    const eyeOffset = new THREE.Vector3(0, 1.6, 0);
+                    const eyeOffset = new THREE.Vector3(0, this.params.eyeHeightOffset, 0);
                     const targetPos = this.player.position.clone().add(eyeOffset);
                     this.camera.position.copy(targetPos);
 
@@ -46,23 +50,22 @@ export class CameraManager {
 
                     // Keyboard Rotation (Q/E) - Adjusts camera offset angle
                     if (input) {
-                        const keySensitivity = 2.0 * delta;
+                        const keySensitivity = this.params.keyboardSensitivityBase * delta;
                         if (input.cameraLeft) this.spherical.theta += keySensitivity;
                         if (input.cameraRight) this.spherical.theta -= keySensitivity;
                     }
 
                     // Mouse Rotation (Right Drag) - Adjusts camera offset angle
                     if (input && input.removeBlock && input.mouseDelta) {
-                        const sensitivity = 0.005;
-                        this.spherical.theta -= input.mouseDelta.x * sensitivity;
-                        this.spherical.phi -= input.mouseDelta.y * sensitivity;
+                        this.spherical.theta -= input.mouseDelta.x * this.params.mouseSensitivity;
+                        this.spherical.phi -= input.mouseDelta.y * this.params.mouseSensitivity;
 
                         // Clamp vertical angle to avoid flipping
-                        this.spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, this.spherical.phi));
+                        this.spherical.phi = Math.max(this.params.phiClampMin, Math.min(this.params.phiClampMax, this.spherical.phi));
                     }
 
                     // Calculate Camera Position
-                    const lookAtTarget = this.player.position.clone().add(new THREE.Vector3(0, 1.5, 0)); // Look at head
+                    const lookAtTarget = this.player.position.clone().add(new THREE.Vector3(0, this.params.lookAtHeightOffset, 0));
 
                     // 1. Get offset from spherical coordinates (Local Offset)
                     const offset = new THREE.Vector3().setFromSpherical(this.spherical);
