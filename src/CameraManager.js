@@ -7,6 +7,11 @@ export class CameraManager {
         this.renderer = renderer;
         this.isFirstPerson = false;
         this.toggleCooldown = 0;
+
+        // Orbit Camera State
+        // theta = 0 means looking at -Z (Back of the character, assuming character faces -Z)
+        this.spherical = new THREE.Spherical(4, Math.PI / 3, 0);
+        this.target = new THREE.Vector3();
     }
 
     toggleView() {
@@ -28,40 +33,48 @@ export class CameraManager {
                 if (this.isFirstPerson) {
                     // FPS Camera: Inside player head
                     const eyeOffset = new THREE.Vector3(0, 1.6, 0);
-                    // We want to look forward based on player rotation
-                    // But actually, in FPS, the camera rotation usually CONTROLS the player rotation,
-                    // or follows it tightly.
-                    // For this simple implementation, we'll place camera at eye level
-                    // and have it look forward relative to player.
-
-                    // Position
                     const targetPos = this.player.position.clone().add(eyeOffset);
                     this.camera.position.copy(targetPos);
 
-                    // Rotation
-                    // We need to look at where the player is facing
+                    // Rotation: Look forward based on player rotation
                     const forward = new THREE.Vector3(0, 0, -1).applyAxisAngle(new THREE.Vector3(0, 1, 0), this.player.mesh.rotation.y);
                     const lookAtPos = targetPos.clone().add(forward);
                     this.camera.lookAt(lookAtPos);
 
                 } else {
-                    // TPS Camera: Follow player rotation
-                    // Offset needs to be "behind" the player.
-                    // Player faces -Z (Forward). So "behind" is +Z.
-                    const offset = new THREE.Vector3(0, 2.5, 4); // Up 2.5, Back 4 (Positive Z)
+                    // TPS Camera: Orbit Control (Relative to Player)
 
+                    // Keyboard Rotation (Q/E) - Adjusts camera offset angle
+                    if (input) {
+                        const keySensitivity = 2.0 * delta;
+                        if (input.cameraLeft) this.spherical.theta += keySensitivity;
+                        if (input.cameraRight) this.spherical.theta -= keySensitivity;
+                    }
+
+                    // Mouse Rotation (Right Drag) - Adjusts camera offset angle
+                    if (input && input.removeBlock && input.mouseDelta) {
+                        const sensitivity = 0.005;
+                        this.spherical.theta -= input.mouseDelta.x * sensitivity;
+                        this.spherical.phi -= input.mouseDelta.y * sensitivity;
+
+                        // Clamp vertical angle to avoid flipping
+                        this.spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, this.spherical.phi));
+                    }
+
+                    // Calculate Camera Position
+                    const lookAtTarget = this.player.position.clone().add(new THREE.Vector3(0, 1.5, 0)); // Look at head
+
+                    // 1. Get offset from spherical coordinates (Local Offset)
+                    const offset = new THREE.Vector3().setFromSpherical(this.spherical);
+
+                    // 2. Apply Player's Rotation to this offset
+                    // This ensures the camera "follows" the player's turning (A/D keys),
+                    // while maintaining the custom angle set by Q/E or Mouse.
                     offset.applyAxisAngle(new THREE.Vector3(0, 1, 0), this.player.mesh.rotation.y);
 
-                    const targetPos = this.player.position.clone().add(offset);
-
-                    // Smooth camera follow (optional, but nice)
-                    // this.camera.position.lerp(targetPos, 0.1); 
-                    // For now, direct copy to prevent lag
-                    this.camera.position.copy(targetPos);
-
-                    // Look at player head/center
-                    const lookAtPos = this.player.position.clone().add(new THREE.Vector3(0, 1.5, 0));
-                    this.camera.lookAt(lookAtPos);
+                    // 3. Add to target position
+                    this.camera.position.copy(lookAtTarget).add(offset);
+                    this.camera.lookAt(lookAtTarget);
                 }
             }
         }

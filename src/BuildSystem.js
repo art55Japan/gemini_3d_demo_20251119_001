@@ -119,6 +119,11 @@ export class BuildSystem {
     }
 
     handleBlockPlacement(input, hit) {
+        // Prevent placement if dragging camera (mouse moving significantly)
+        // mouseDelta is reset every frame, so this checks instantaneous movement
+        const isDragging = Math.abs(input.mouseDelta?.x || 0) > 2 || Math.abs(input.mouseDelta?.y || 0) > 2;
+        if (isDragging) return;
+
         // Place Block
         if (input.placeBlock && this.buildCooldown <= 0) {
             const point = hit.point;
@@ -136,6 +141,10 @@ export class BuildSystem {
     }
 
     handleBlockRemoval(input, hit) {
+        // Prevent removal if dragging camera
+        const isDragging = Math.abs(input.mouseDelta?.x || 0) > 2 || Math.abs(input.mouseDelta?.y || 0) > 2;
+        if (isDragging) return;
+
         // Remove Block
         if (input.removeBlock && this.buildCooldown <= 0) {
             const target = hit.object.userData.entity;

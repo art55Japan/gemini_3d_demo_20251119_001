@@ -5,6 +5,7 @@ export class Input {
         this.mouseDown = false;
         this.rightMouseDown = false;
         this.mouse = { x: 0, y: 0 };
+        this.mouseDelta = { x: 0, y: 0 };
 
         // Data-Driven Key Mapping
         this.keyMap = {
@@ -12,6 +13,8 @@ export class Input {
             's': 'backward', 'arrowdown': 'backward', 'down': 'backward',
             'a': 'rotateLeft', 'arrowleft': 'rotateLeft', 'left': 'rotateLeft',
             'd': 'rotateRight', 'arrowright': 'rotateRight', 'right': 'rotateRight',
+            'q': 'cameraLeft',
+            'e': 'cameraRight',
             ' ': 'jump',
             'f': 'attack',
             'b': 'toggleBuildMode',
@@ -56,6 +59,8 @@ export class Input {
         window.addEventListener('mousemove', (e) => {
             this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
             this.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+            this.mouseDelta.x += e.movementX || 0;
+            this.mouseDelta.y += e.movementY || 0;
         });
 
         window.addEventListener('contextmenu', e => e.preventDefault());
@@ -69,6 +74,8 @@ export class Input {
             attack: this.activeKeys.has('attack') || this.mouseDown,
             rotateLeft: this.activeKeys.has('rotateLeft'),
             rotateRight: this.activeKeys.has('rotateRight'),
+            cameraLeft: this.activeKeys.has('cameraLeft'),
+            cameraRight: this.activeKeys.has('cameraRight'),
             toggleBuildMode: this.activeKeys.has('toggleBuildMode'),
             toggleView: this.activeKeys.has('toggleView'),
             placeBlock: this.mouseDown,
@@ -76,8 +83,12 @@ export class Input {
             save: this.activeKeys.has('save'),
             load: this.activeKeys.has('load'),
             menu: this.activeKeys.has('menu'),
-            mouse: { ...this.mouse }
+            mouse: { ...this.mouse },
+            mouseDelta: { ...this.mouseDelta }
         };
+
+        // Reset delta after reading
+        this.mouseDelta = { x: 0, y: 0 };
 
         // Calculate movement vector
         // No if-statements for movement direction, just math
