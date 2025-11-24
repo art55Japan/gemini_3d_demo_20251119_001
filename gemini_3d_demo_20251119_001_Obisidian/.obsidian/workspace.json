@@ -27,12 +27,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "設計書_ClaudeCodeによるリバース/01_プロジェクト概要.md",
-                "mode": "preview",
+                "file": "入門レベル/_MOC_入門レベル.md",
+                "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "01_プロジェクト概要"
+              "title": "_MOC_入門レベル"
             }
           }
         ],
@@ -200,6 +200,10 @@
   },
   "active": "9cdd2a999f41356d",
   "lastOpenFiles": [
+    "unnamed.png",
+    "00_このドキュメントについて.md",
+    "入門レベル/_MOC_入門レベル.md",
+    "設計書_ClaudeCodeによるリバース/01_プロジェクト概要.md",
     "設計書_Codexよるリバース/Architecture/状態遷移図.md",
     "設計書_Codexよるリバース/Architecture/処理シーケンス.md",
     "設計書_Codexよるリバース/Architecture/シーケンス図.md",
@@ -210,7 +214,6 @@
     "設計書_ClaudeCodeによるリバース/07_セーブシステム設計.md",
     "設計書_ClaudeCodeによるリバース/06_ゲームループ・入力設計.md",
     "設計書_ClaudeCodeによるリバース/02_アーキテクチャ設計.md",
-    "設計書_ClaudeCodeによるリバース/01_プロジェクト概要.md",
     "設計書_Gemini3によるリバース/03_EntitySystem.md",
     "設計書_Gemini3によるリバース/02_PlayerSystem.md",
     "設計書_Gemini3によるリバース/05_InputAndAudio.md",
@@ -232,9 +235,6 @@
     "設計書_ClaudeCodeによるリバース/06_ゲームループ・入力設計.md.tmp.42064.1763910276993",
     "設計書_ClaudeCodeによるリバース/04_エンティティシステム設計.md.tmp.42064.1763910103063",
     "設計書_ClaudeCodeによるリバース/03_クラス設計.md.tmp.42064.1763910032470",
-    "設計書_ClaudeCodeによるリバース/_MOC_設計書.md",
-    "入門レベル/00_はじめに/04_アーキテクチャ概要.md",
-    "設計書_ClaudeCodeによるリバース/ドキュメント作成計画",
-    "入門レベル/00_はじめに/01_学習の進め方.md"
+    "設計書_ClaudeCodeによるリバース/ドキュメント作成計画"
   ]
 }
