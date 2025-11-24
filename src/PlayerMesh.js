@@ -11,7 +11,7 @@ export class PlayerMesh {
             const model = gltf.scene;
 
             // Adjust scale and rotation to match the game world
-            model.rotation.y = -Math.PI / 2; // -90 degrees to face forward correctly
+            model.rotation.y = Math.PI / 2; // +90 degrees to face away from camera
 
             // Debug logs & Normalization
             const box = new THREE.Box3().setFromObject(model);
