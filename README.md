@@ -29,7 +29,6 @@ Three.jsとViteで作られた、フェルト質感のうさぎパラディン�
 
 1. リポジトリをクローン:
 ```bash
-git clone https://github.com/art55Japan/gemini_3d_demo_20251119_001.git
 cd gemini_3d_demo_20251119_001
 ```
 
@@ -161,7 +160,6 @@ A WebXR-enabled 3D game featuring a felt-textured rabbit paladin character. Buil
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/art55Japan/gemini_3d_demo_20251119_001.git
 cd gemini_3d_demo_20251119_001
 ```
 

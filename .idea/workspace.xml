@@ -17,16 +17,11 @@
   </component>
   <component name="GitHubPullRequestSearchHistory"><![CDATA[{
   "lastFilter": {
-    "state": "OPEN",
-    "assignee": "art55Japan"
+    "state": "OPEN"
   }
 }]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/art55Japan/gemini_3d_demo_20251119_001.git",
-    "accountId": "6821e517-4de4-4df5-84b2-fca75f34358f"
-  }
-}]]></component>
+  <component name="GithubPullRequestsUISettings">
+  </component>
   <component name="ProjectColorInfo"><![CDATA[{
   "associatedIndex": 1
 }]]></component>
