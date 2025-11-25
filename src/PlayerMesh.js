@@ -14,7 +14,7 @@ export class PlayerMesh {
     create() {
         const group = new THREE.Group();
         const loader = new GLTFLoader();
-        loader.load('/models/new_rabbit_model.glb', (gltf) => {
+        loader.load('/models/modified_model.glb', (gltf) => {
             const model = gltf.scene;
             // Rotate to face away from camera
             model.rotation.y = this.playerParams.initialRotationY;
@@ -37,51 +37,18 @@ export class PlayerMesh {
                 // Store initial Y for animation
                 this.initialModelY = model.position.y;
             }
-            // Materials
-            const materials = {
-                felt: new THREE.MeshStandardMaterial({ color: 0xFFFFFF, roughness: 1.0, metalness: 0.0, emissive: 0x333333 }),
-                armor: new THREE.MeshStandardMaterial({ color: 0xFAFAFA, roughness: 0.1, metalness: 0.9 }),
-                eye: new THREE.MeshStandardMaterial({ color: 0x000000, roughness: 0.5, metalness: 0.0, emissive: 0x111111 }),
-                cape: new THREE.MeshStandardMaterial({ color: 0x0000FF, roughness: 0.8, metalness: 0.1 })
-            };
-            // Apply materials and locate head mesh (part 8)
-            let colorIndex = 0;
-            let headMesh = null;
+
+            // Enable shadows for all meshes
             model.traverse((child) => {
                 if (child.isMesh) {
                     child.castShadow = true;
                     child.receiveShadow = true;
-                    if (child.material) {
-                        let mat;
-                        let partType;
-                        if (colorIndex === 8) headMesh = child;
-                        if (colorIndex === 8 || colorIndex === 12) { mat = materials.felt; partType = 'FELT'; }
-                        else if (colorIndex === 9) { mat = materials.cape; partType = 'CAPE'; }
-                        else { mat = materials.armor; partType = 'ARMOR'; }
-                        child.material = mat.clone();
-                        console.log(`Part ${colorIndex} ("${child.name}") = ${partType}`);
-                        colorIndex++;
-                    }
                 }
             });
-            // Eyes with highlights
-            if (headMesh) {
-                const eyeSphereLeft = new THREE.Mesh(new THREE.SphereGeometry(0.03, 16, 16), materials.eye);
-                eyeSphereLeft.position.set(0.1, 0.14, 0.1);
-                headMesh.add(eyeSphereLeft);
-                const highlightLeft = new THREE.Mesh(new THREE.SphereGeometry(0.01, 8, 8), new THREE.MeshBasicMaterial({ color: 0xFFFFFF, transparent: true, opacity: 0.9 }));
-                highlightLeft.position.set(0.01, 0.01, 0.015);
-                eyeSphereLeft.add(highlightLeft);
-                const eyeSphereRight = new THREE.Mesh(new THREE.SphereGeometry(0.03, 16, 16), materials.eye);
-                eyeSphereRight.position.set(0.1, 0.14, -0.05);
-                headMesh.add(eyeSphereRight);
-                const highlightRight = new THREE.Mesh(new THREE.SphereGeometry(0.01, 8, 8), new THREE.MeshBasicMaterial({ color: 0xFFFFFF, transparent: true, opacity: 0.9 }));
-                highlightRight.position.set(0.01, 0.01, 0.015);
-                eyeSphereRight.add(highlightRight);
-            }
+
             // Store references for animation
             this.model = model;
-            this.headMesh = headMesh;
+            this.headMesh = null;
             group.add(model);
         }, undefined, (error) => {
             console.error('An error happened loading the player model:', error);
