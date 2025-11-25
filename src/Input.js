@@ -6,6 +6,7 @@ export class Input {
         this.rightMouseDown = false;
         this.mouse = { x: 0, y: 0 };
         this.mouseDelta = { x: 0, y: 0 };
+        this.wheelDelta = 0;
 
         // Data-Driven Key Mapping
         this.keyMap = {
@@ -63,6 +64,10 @@ export class Input {
             this.mouseDelta.y += e.movementY || 0;
         });
 
+        window.addEventListener('wheel', (e) => {
+            this.wheelDelta = e.deltaY;
+        });
+
         window.addEventListener('contextmenu', e => e.preventDefault());
     }
 
@@ -84,11 +89,13 @@ export class Input {
             load: this.activeKeys.has('load'),
             menu: this.activeKeys.has('menu'),
             mouse: { ...this.mouse },
-            mouseDelta: { ...this.mouseDelta }
+            mouseDelta: { ...this.mouseDelta },
+            wheelDelta: this.wheelDelta
         };
 
         // Reset delta after reading
         this.mouseDelta = { x: 0, y: 0 };
+        this.wheelDelta = 0;
 
         // Calculate movement vector
         // No if-statements for movement direction, just math

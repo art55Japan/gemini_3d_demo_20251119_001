@@ -15,6 +15,7 @@ export class CameraManager {
             this.params.initialPhi,
             this.params.initialTheta
         );
+        this.currentRadius = this.params.orbitRadius;  // Track current distance
         this.target = new THREE.Vector3();
     }
 
@@ -53,6 +54,17 @@ export class CameraManager {
                         const keySensitivity = this.params.keyboardSensitivityBase * delta;
                         if (input.cameraLeft) this.spherical.theta += keySensitivity;
                         if (input.cameraRight) this.spherical.theta -= keySensitivity;
+
+                        // Mouse Wheel - Adjust camera distance
+                        if (input.wheelDelta !== 0) {
+                            const direction = input.wheelDelta > 0 ? 1 : -1;
+                            this.currentRadius += direction * this.params.orbitRadiusStep;
+                            this.currentRadius = Math.max(
+                                this.params.orbitRadiusMin,
+                                Math.min(this.params.orbitRadiusMax, this.currentRadius)
+                            );
+                            this.spherical.radius = this.currentRadius;
+                        }
                     }
 
                     // Mouse Rotation (Right Drag) - Adjusts camera offset angle

@@ -6,6 +6,9 @@
 export class CameraParameters {
     constructor({
         orbitRadius = 4,
+        orbitRadiusMin = 2,
+        orbitRadiusMax = 10,
+        orbitRadiusStep = 0.5,
         initialPhi = Math.PI / 3,
         initialTheta = 0,
         mouseSensitivity = 0.005,
@@ -17,6 +20,9 @@ export class CameraParameters {
         toggleCooldown = 0.3
     } = {}) {
         this.orbitRadius = orbitRadius;
+        this.orbitRadiusMin = orbitRadiusMin;
+        this.orbitRadiusMax = orbitRadiusMax;
+        this.orbitRadiusStep = orbitRadiusStep;
         this.initialPhi = initialPhi;
         this.initialTheta = initialTheta;
         this.mouseSensitivity = mouseSensitivity;
