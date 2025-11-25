@@ -67,7 +67,7 @@ export class Game {
         }, { once: true });
 
         // Lighting
-        const ambientLight = new THREE.AmbientLight(0x404040, 2); // Soft white light
+        const ambientLight = new THREE.AmbientLight(0x808080, 2.5); // Brighter ambient to soften shadows
         this.scene.add(ambientLight);
 
         const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
