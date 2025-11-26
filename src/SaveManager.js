@@ -99,27 +99,27 @@ export class SaveManager {
             const json = JSON.stringify(saveData);
             localStorage.setItem(this.quickKey, json);
             console.log("Quick Save Successful!");
-            this.game.showNotification("Quick Save Successful!");
+            this.game.notificationManager.show("Quick Save Successful!");
         } catch (e) {
             console.error("Failed to quick save:", e);
-            this.game.showNotification("Failed to quick save: " + e.message, 4000);
+            this.game.notificationManager.show("Failed to quick save: " + e.message, 4000);
         }
     }
 
     quickLoad() {
         const json = localStorage.getItem(this.quickKey);
         if (!json) {
-            this.game.showNotification("No quick save found.");
+            this.game.notificationManager.show("No quick save found.");
             return;
         }
         try {
             const saveData = JSON.parse(json);
             this._restoreSaveData(saveData);
             console.log("Quick Load Successful!");
-            this.game.showNotification("Quick Load Successful!");
+            this.game.notificationManager.show("Quick Load Successful!");
         } catch (e) {
             console.error("Failed to quick load:", e);
-            this.game.showNotification("Failed to quick load: " + e.message, 4000);
+            this.game.notificationManager.show("Failed to quick load: " + e.message, 4000);
         }
     }
 
@@ -151,11 +151,11 @@ export class SaveManager {
             const json = JSON.stringify(saveData);
             localStorage.setItem(this.prefix + slotId, json);
             console.log(`Game Saved to Slot ${slotId}!`);
-            this.game.showNotification(`Game Saved to Slot ${slotId}!`);
+            this.game.notificationManager.show(`Game Saved to Slot ${slotId}!`);
             return true;
         } catch (e) {
             console.error("Failed to save game:", e);
-            this.game.showNotification("Failed to save game: " + e.message, 4000);
+            this.game.notificationManager.show("Failed to save game: " + e.message, 4000);
             return false;
         }
     }
@@ -163,7 +163,7 @@ export class SaveManager {
     load(slotId) {
         const json = localStorage.getItem(this.prefix + slotId);
         if (!json) {
-            this.game.showNotification("Save data not found.");
+            this.game.notificationManager.show("Save data not found.");
             return false;
         }
 
@@ -172,18 +172,18 @@ export class SaveManager {
             this._restoreSaveData(saveData);
 
             console.log(`Game Loaded from Slot ${slotId}!`);
-            this.game.showNotification(`Game Loaded from Slot ${slotId}!`);
+            this.game.notificationManager.show(`Game Loaded from Slot ${slotId}!`);
             return true;
 
         } catch (e) {
             console.error("Failed to load game:", e);
-            this.game.showNotification("Failed to load game: " + e.message, 4000);
+            this.game.notificationManager.show("Failed to load game: " + e.message, 4000);
             return false;
         }
     }
 
     delete(slotId) {
         localStorage.removeItem(this.prefix + slotId);
-        this.game.showNotification(`Slot ${slotId} deleted.`);
+        this.game.notificationManager.show(`Slot ${slotId} deleted.`);
     }
 }

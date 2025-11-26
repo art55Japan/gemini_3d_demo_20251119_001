@@ -124,7 +124,7 @@ export class SaveLoadUI {
             const id = isNew ? Date.now().toString() : slot.id;
             if (this.saveManager.save(id)) {
                 this.refreshList();
-                if (isNew) this.game.showNotification("New save created!");
+                if (isNew) this.game.notificationManager.show("New save created!");
             }
         };
         actions.appendChild(saveBtn);
