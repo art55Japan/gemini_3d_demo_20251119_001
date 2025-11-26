@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { Entity } from './Entity.js';
 
 // State Interface
@@ -21,9 +22,10 @@ class AliveState extends SlimeState {
         const heightFactor = (bounce + 1) * 0.5;
         this.slime.mesh.position.y = this.slime.originalY + heightFactor * this.slime.bounceHeight;
 
-        // Squash and Stretch
-        const scaleY = 0.8 + (bounce * 0.1);
-        const scaleXZ = 1.0 - (bounce * 0.05);
+        // Squash and Stretch (adjusted for 1.3x scale)
+        const baseScale = 1.3; // 1.3x base scale
+        const scaleY = baseScale * (0.8 + (bounce * 0.1));
+        const scaleXZ = baseScale * (1.0 - (bounce * 0.05));
         this.slime.mesh.scale.set(scaleXZ, scaleY, scaleXZ);
 
         // Sync logical position
@@ -106,82 +108,37 @@ export class Slime extends Entity {
         this.currentState.takeDamage();
     }
 
-    createFeltTexture(colorHex) {
-        const canvas = document.createElement('canvas');
-        canvas.width = 256; // Smaller texture for enemies
-        canvas.height = 256;
-        const ctx = canvas.getContext('2d');
-
-        // Base color
-        ctx.fillStyle = colorHex;
-        ctx.fillRect(0, 0, 256, 256);
-
-        // Noise
-        for (let i = 0; i < 10000; i++) {
-            const x = Math.random() * 256;
-            const y = Math.random() * 256;
-            const opacity = Math.random() * 0.1 + 0.05;
-            ctx.fillStyle = `rgba(0, 0, 0, ${opacity})`;
-            ctx.fillRect(x, y, 2, 2);
-
-            const x2 = Math.random() * 256;
-            const y2 = Math.random() * 256;
-            const opacity2 = Math.random() * 0.1 + 0.05;
-            ctx.fillStyle = `rgba(255, 255, 255, ${opacity2})`;
-            ctx.fillRect(x2, y2, 2, 2);
-        }
-
-        const texture = new THREE.CanvasTexture(canvas);
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-        return texture;
-    }
-
     buildSlime() {
         const group = new THREE.Group();
 
-        // Materials
-        const greenFeltTex = this.createFeltTexture('#32CD32'); // Lime Green
-        const greenFelt = new THREE.MeshStandardMaterial({
-            map: greenFeltTex,
-            bumpMap: greenFeltTex,
-            bumpScale: 0.02,
-            roughness: 1.0
+        // Load 3D model
+        const loader = new GLTFLoader();
+        loader.load('/models/slime_001.glb', (gltf) => {
+            const model = gltf.scene;
+
+            // Scale to 1.3x size
+            model.scale.set(1.3, 1.3, 1.3);
+
+            // Enable shadows
+            model.traverse((child) => {
+                if (child.isMesh) {
+                    child.castShadow = true;
+                    child.receiveShadow = true;
+                }
+            });
+
+            // Store model reference for animation
+            this.model = model;
+            group.add(model);
+        }, undefined, (error) => {
+            console.error('Error loading slime model:', error);
+            // Fallback: create simple placeholder
+            const geo = new THREE.SphereGeometry(0.4, 16, 16);
+            const mat = new THREE.MeshStandardMaterial({ color: 0x32CD32 });
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.castShadow = true;
+            group.add(mesh);
         });
-
-        const plasticBlack = new THREE.MeshStandardMaterial({ color: 0x000000, roughness: 0.1, metalness: 0.1 });
-
-        // Body
-        // Slightly flattened sphere
-        const bodyGeo = new THREE.SphereGeometry(0.4, 32, 32);
-        const body = new THREE.Mesh(bodyGeo, greenFelt);
-        body.scale.set(1, 0.8, 1); // Flatten
-        body.castShadow = true;
-        group.add(body);
-
-        // Eyes
-        const eyeGeo = new THREE.SphereGeometry(0.08, 16, 16);
-
-        const eyeL = new THREE.Mesh(eyeGeo, plasticBlack);
-        eyeL.position.set(-0.15, 0.1, 0.3);
-        group.add(eyeL);
-
-        const eyeR = new THREE.Mesh(eyeGeo, plasticBlack);
-        eyeR.position.set(0.15, 0.1, 0.3);
-        group.add(eyeR);
-
-        // Eye Highlights
-        const highlightGeo = new THREE.SphereGeometry(0.02);
-        const highlightMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-
-        const highlightL = new THREE.Mesh(highlightGeo, highlightMat);
-        highlightL.position.set(-0.03, 0.03, 0.07);
-        eyeL.add(highlightL);
-
-        const highlightR = new THREE.Mesh(highlightGeo, highlightMat);
-        highlightR.position.set(-0.03, 0.03, 0.07);
-        eyeR.add(highlightR);
-
 
         return group;
     }
