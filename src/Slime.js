@@ -120,6 +120,9 @@ export class Slime extends Entity {
             // Scale to 1.3x size
             model.scale.set(1.3, 1.3, 1.3);
 
+            // Random rotation on Y-axis (0 to 2π)
+            model.rotation.y = Math.random() * Math.PI * 2;
+
             // Enable shadows
             model.traverse((child) => {
                 if (child.isMesh) {
