@@ -33,7 +33,8 @@ class AliveState extends SlimeState {
     }
 
     handleCollision(player, physics) {
-        const collisionRange = 0.8;
+        // Adjusted for 1.3x scale: base radius (0.4) * scale (1.3) + padding (0.52)
+        const collisionRange = 1.04;
         const slimePos = this.slime.mesh.position;
         const dist = player.position.distanceTo(slimePos);
 
