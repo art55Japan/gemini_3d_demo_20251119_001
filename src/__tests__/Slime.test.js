@@ -2,6 +2,25 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Slime } from '../Slime.js';
 import * as THREE from 'three';
 
+// Mock GLTFLoader
+vi.mock('three/examples/jsm/loaders/GLTFLoader.js', () => ({
+    GLTFLoader: vi.fn(function () {
+        this.load = vi.fn((url, onLoad, onProgress, onError) => {
+            // Immediately call onLoad with a simple mock scene
+            const mockScene = new THREE.Group();
+            const mockMesh = new THREE.Mesh(
+                new THREE.BoxGeometry(1, 1, 1),
+                new THREE.MeshStandardMaterial()
+            );
+            mockScene.add(mockMesh);
+            mockScene.scale.set(1.3, 1.3, 1.3);
+            if (onLoad) {
+                onLoad({ scene: mockScene });
+            }
+        });
+    })
+}));
+
 describe('Slime', () => {
     let slime;
 

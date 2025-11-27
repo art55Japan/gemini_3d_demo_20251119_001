@@ -13,8 +13,8 @@ const createMockGame = () => {
     };
     const entityManager = { entities: [], add: vi.fn((e) => entityManager.entities.push(e)), remove: vi.fn() };
     const collidables = [];
-    const showNotification = vi.fn();
-    return { player, entityManager, collidables, showNotification };
+    const notificationManager = { show: vi.fn() };
+    return { player, entityManager, collidables, notificationManager };
 };
 
 // Mock localStorage using vi.stubGlobal
@@ -42,7 +42,7 @@ describe('SaveManager', () => {
         const sm = new SaveManager(game);
         sm.quickSave();
         expect(localStorage.setItem).toHaveBeenCalled();
-        expect(game.showNotification).toHaveBeenCalledWith('Quick Save Successful!');
+        expect(game.notificationManager.show).toHaveBeenCalledWith('Quick Save Successful!');
     });
 
     it('quickLoad restores player state', () => {
@@ -59,7 +59,7 @@ describe('SaveManager', () => {
         sm.quickLoad();
         expect(game.player.position.fromArray).toHaveBeenCalledWith([10, 20, 30]);
         expect(game.player.mesh.rotation.y).toBe(1.5);
-        expect(game.showNotification).toHaveBeenCalledWith('Quick Load Successful!');
+        expect(game.notificationManager.show).toHaveBeenCalledWith('Quick Load Successful!');
     });
 
     it('getSlots returns sorted save slots', () => {
@@ -95,7 +95,7 @@ describe('SaveManager', () => {
         const result = sm.save('testSlot');
         expect(result).toBe(true);
         expect(localStorage.setItem).toHaveBeenCalled();
-        expect(game.showNotification).toHaveBeenCalled();
+        expect(game.notificationManager.show).toHaveBeenCalled();
     });
 
     it('load restores saved blocks and enemies', () => {
@@ -121,7 +121,7 @@ describe('SaveManager', () => {
         expect(Slime.fromSaveData).toHaveBeenCalledWith(slimeData);
         expect(game.entityManager.entities.length).toBe(2);
         expect(game.collidables).toContain(game.entityManager.entities[0].mesh);
-        expect(game.showNotification).toHaveBeenCalled();
+        expect(game.notificationManager.show).toHaveBeenCalled();
     });
 
     it('delete removes a slot', () => {
@@ -130,6 +130,6 @@ describe('SaveManager', () => {
         localStorage.getItem = vi.fn(() => JSON.stringify({}));
         sm.delete('delMe');
         expect(localStorage.removeItem).toHaveBeenCalled();
-        expect(game.showNotification).toHaveBeenCalled();
+        expect(game.notificationManager.show).toHaveBeenCalled();
     });
 });
